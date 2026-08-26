@@ -9,9 +9,10 @@
 [![Supabase](https://img.shields.io/badge/Supabase-Auth%20%2B%20DB-3ECF8E?logo=supabase&logoColor=white)](https://supabase.com)
 [![TailwindCSS](https://img.shields.io/badge/Tailwind%20CSS-3-06B6D4?logo=tailwindcss&logoColor=white)](https://tailwindcss.com)
 [![Python](https://img.shields.io/badge/Python-3.11+-3776AB?logo=python&logoColor=white)](https://python.org)
+[![Vercel](https://img.shields.io/badge/Deployed%20on-Vercel-black?logo=vercel)](https://hack-feed-umber.vercel.app)
 [![License: MIT](https://img.shields.io/badge/License-MIT-violet)](LICENSE)
 
-[**Live Demo →**](https://hackfeed.vercel.app) · [**Report a Bug**](https://github.com/viswanath006/HackFeed/issues) · [**Request a Feature**](https://github.com/viswanath006/HackFeed/issues)
+[**🌐 Live Demo →**](https://hack-feed-umber.vercel.app) · [**Report a Bug**](https://github.com/viswanath006/HackFeed/issues) · [**Request a Feature**](https://github.com/viswanath006/HackFeed/issues)
 
 </div>
 
@@ -31,7 +32,7 @@ Every card shows the **original platform poster**, live deadlines, prizes, and a
 
 | Feed | Opportunity Detail |
 |:---:|:---:|
-| ![Feed](https://placehold.co/600x360/0d0d16/7c3aed?text=Feed+View) | ![Detail](https://placehold.co/600x360/0d0d16/7c3aed?text=Detail+View) |
+| [![Feed](https://placehold.co/600x360/0d0d16/7c3aed?text=Feed+View)](https://hack-feed-umber.vercel.app/opportunities) | [![Detail](https://placehold.co/600x360/0d0d16/7c3aed?text=Detail+View)](https://hack-feed-umber.vercel.app/opportunities) |
 
 ---
 
@@ -281,6 +282,10 @@ Each scraper:
 
 ### Frontend (Vercel — recommended)
 
+> **Already deployed at [hack-feed-umber.vercel.app](https://hack-feed-umber.vercel.app)** 🎉
+
+To deploy your own fork:
+
 ```bash
 # Install Vercel CLI
 npm i -g vercel
@@ -325,6 +330,8 @@ Distributed under the **MIT License**. See [`LICENSE`](LICENSE) for more informa
 <div align="center">
 
 Built with ❤️ by [viswanath006](https://github.com/viswanath006)
+
+🌐 **Live at [hack-feed-umber.vercel.app](https://hack-feed-umber.vercel.app)**
 
 ⭐ **Star this repo if you found it useful!**
 
