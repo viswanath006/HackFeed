@@ -1,0 +1,202 @@
+"""
+scraper/scrapers/hackerearth.py
+
+Scraper module for HackerEarth.
+Fetches Hackathons and Hiring/Internship Challenges using HackerEarth's community APIs.
+Uses JSON search API first, falling back to HTML scraping if necessary.
+"""
+
+from typing import List, Dict, Any, Optional
+from bs4 import BeautifulSoup
+from scrapers.base import BaseScraper
+from config import settings
+
+
+class HackerEarthScraper(BaseScraper):
+    platform_name: str = "HackerEarth"
+
+    COMPETE_API_URL = "https://www.hackerearth.com/api/community/challenges/compete/"
+    HIRING_API_URL = "https://www.hackerearth.com/api/community/challenges/hiring/"
+    CHALLENGES_URL = "https://www.hackerearth.com/challenges/"
+
+    def scrape(self) -> List[Dict[str, Any]]:
+        """
+        Main scraping entrypoint for HackerEarth.
+        Scrapes both Hackathons/Contests (compete) and Hiring/Internship challenges.
+        """
+        items: List[Dict[str, Any]] = []
+        print(f"[{self.platform_name}] Fetching challenges...")
+
+        # 1. Fetch Compete challenges (Hackathons / Contests)
+        compete_items = self._fetch_api(self.COMPETE_API_URL, "compete")
+        items.extend(compete_items)
+
+        self.rate_limit()
+
+        # 2. Fetch Hiring challenges (Jobs / Internships)
+        hiring_items = self._fetch_api(self.HIRING_API_URL, "hiring")
+        items.extend(hiring_items)
+
+        if not items:
+            # Fallback to HTML scraping if API returned 0 items
+            items = self._scrape_html()
+
+        # Deduplicate by source_url within the batch
+        seen_urls = set()
+        unique_items = []
+        for it in items:
+            url = it.get("source_url")
+            if url and url not in seen_urls:
+                seen_urls.add(url)
+                unique_items.append(it)
+
+        print(f"[{self.platform_name}] Total opportunities extracted: {len(unique_items)}")
+        return unique_items
+
+    def _fetch_api(self, url: str, label: str) -> List[Dict[str, Any]]:
+        items: List[Dict[str, Any]] = []
+        try:
+            self.rate_limit()
+            headers = {
+                "Accept": "application/json, text/javascript, */*; q=0.01",
+                "Referer": "https://www.hackerearth.com/challenges/",
+                "Origin": "https://www.hackerearth.com"
+            }
+            response = self.client.get(url, headers=headers)
+
+            if response.status_code == 200:
+                data = response.json()
+                response_items = data.get("data", []) or data.get("response", []) or data.get("results", []) or []
+
+                for raw in response_items[:settings.MAX_ITEMS_PER_PLATFORM]:
+                    normalized = self._parse_json_item(raw, default_category=label)
+                    if normalized:
+                        items.append(normalized)
+
+                print(f"[{self.platform_name}] Fetched {len(items)} {label} challenges via API.")
+        except Exception as e:
+            print(f"[{self.platform_name} API Error] Failed {label}: {e}")
+
+        return items
+
+    def _parse_json_item(self, raw: Dict[str, Any], default_category: str = "compete") -> Optional[Dict[str, Any]]:
+        title = raw.get("title") or raw.get("challenge_name")
+        slug = raw.get("slug") or raw.get("url")
+        if not title:
+            return None
+
+        # Build clean source URL
+        raw_url = raw.get("url") or f"/challenges/{slug}/"
+        if raw_url.startswith("http"):
+            source_url = raw_url
+        else:
+            source_url = f"https://www.hackerearth.com{raw_url if raw_url.startswith('/') else '/' + raw_url}"
+
+        # Classify opportunity type (Hiring / Jobs vs Hackathon)
+        raw_type = str(raw.get("type", "")).lower()
+        title_lower = title.lower()
+        if default_category == "hiring" or any(w in raw_type or w in title_lower for w in ["hiring", "internship", "job", "developer assessment"]):
+            opportunity_type = "internship"
+        else:
+            opportunity_type = "hackathon"
+
+        # Organizer / Company
+        organizer = raw.get("company_name")
+        if not organizer:
+            company = raw.get("company", {})
+            if isinstance(company, dict):
+                organizer = company.get("name")
+            elif isinstance(company, str):
+                organizer = company
+        if not organizer:
+            organizer = raw.get("organizer_name") or "HackerEarth"
+
+        # Dates
+        start_date = raw.get("start") or raw.get("start_utc_tz") or raw.get("start_time")
+        end_date = raw.get("end") or raw.get("end_utc_tz") or raw.get("end_time")
+        deadline = end_date or start_date
+
+        # Prizes
+        prize_raw = raw.get("prize_detail") or raw.get("prizes") or raw.get("prize")
+        prize_pool = None
+        if prize_raw:
+            if isinstance(prize_raw, dict):
+                prize_pool = prize_raw.get("total_prize") or prize_raw.get("amount")
+            else:
+                prize_pool = str(prize_raw)
+
+        # Tags
+        tags = []
+        if raw.get("type"):
+            tags.append(str(raw.get("type")))
+        if raw.get("skills"):
+            skills = raw.get("skills")
+            if isinstance(skills, list):
+                tags.extend([str(s) for s in skills])
+            elif isinstance(skills, str):
+                tags.extend([s.strip() for s in skills.split(",")])
+
+        # Banner image / Official Poster
+        banner_url = raw.get("thumbnail") or raw.get("cover_image") or raw.get("listing_image") or raw.get("image_url")
+
+        return self.normalize_opportunity(
+            title=title,
+            source_url=source_url,
+            opportunity_type=opportunity_type,
+            source_platform=self.platform_name,
+            description=raw.get("description") or f"{opportunity_type.capitalize()} challenge hosted on HackerEarth by {organizer}",
+            organizer=organizer,
+            location="Online",
+            mode="online",
+            start_date=start_date,
+            end_date=end_date,
+            application_deadline=deadline,
+            prize_pool=prize_pool,
+            tags=tags,
+            banner_image_url=banner_url,
+            is_active=True
+        )
+
+    def _scrape_html(self) -> List[Dict[str, Any]]:
+        """HTML fallback scraper for HackerEarth challenges page."""
+        items: List[Dict[str, Any]] = []
+        try:
+            self.rate_limit()
+            resp = self.client.get(self.CHALLENGES_URL)
+            if resp.status_code != 200:
+                return []
+
+            soup = BeautifulSoup(resp.text, "html.parser")
+            cards = soup.select(".challenge-card-modern, .challenge-card, a.challenge-card-link")
+
+            for card in cards[:settings.MAX_ITEMS_PER_PLATFORM]:
+                title_el = card.select_one(".challenge-name, .challenge-list-title, h3, h4")
+                if not title_el:
+                    continue
+
+                title = title_el.get_text(strip=True)
+                href = card.get("href") or (card.find("a", href=True) or {}).get("href", "")
+                if not href:
+                    continue
+
+                if not href.startswith("http"):
+                    href = f"https://www.hackerearth.com{href if href.startswith('/') else '/' + href}"
+
+                img_el = card.select_one("img")
+                banner = img_el.get("src") if img_el else None
+
+                items.append(self.normalize_opportunity(
+                    title=title,
+                    source_url=href,
+                    opportunity_type="hackathon",
+                    source_platform=self.platform_name,
+                    organizer="HackerEarth",
+                    banner_image_url=banner,
+                    mode="online"
+                ))
+
+            print(f"[{self.platform_name} HTML] Parsed {len(items)} items from HTML fallback.")
+        except Exception as e:
+            print(f"[{self.platform_name} HTML Error] {e}")
+
+        return items

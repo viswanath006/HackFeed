@@ -1,0 +1,69 @@
+name: HackFeed Scheduled Automation
+
+on:
+  schedule:
+    # 1. Hourly deadline reminders
+    - cron: '0 * * * *'
+    # 2. Weekly newsletter digest (Mondays at 09:00 UTC)
+    - cron: '0 9 * * 1'
+    # 3. Scraping every 6 hours
+    - cron: '0 */6 * * *'
+  workflow_dispatch:
+    inputs:
+      job_type:
+        description: 'Job to execute'
+        required: true
+        default: 'all'
+        type: choice
+        options:
+          - all
+          - scrapers
+          - reminders
+          - digest
+
+jobs:
+  run-automation:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout Repository
+        uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+          cache: 'pip'
+
+      - name: Install Dependencies
+        run: |
+          python -m pip install --upgrade pip
+          pip install -r scraper/requirements.txt
+
+      - name: Run Hourly Deadline Reminders
+        if: github.event.schedule == '0 * * * *' || github.event.inputs.job_type == 'reminders' || github.event.inputs.job_type == 'all'
+        working-directory: ./scraper
+        env:
+          NEXT_PUBLIC_SUPABASE_URL: ${{ secrets.NEXT_PUBLIC_SUPABASE_URL }}
+          SUPABASE_SERVICE_ROLE_KEY: ${{ secrets.SUPABASE_SERVICE_ROLE_KEY }}
+          RESEND_API_KEY: ${{ secrets.RESEND_API_KEY }}
+          NEXT_PUBLIC_APP_URL: ${{ secrets.NEXT_PUBLIC_APP_URL }}
+        run: python main.py --reminders
+
+      - name: Run Weekly Newsletter Digest
+        if: github.event.schedule == '0 9 * * 1' || github.event.inputs.job_type == 'digest' || github.event.inputs.job_type == 'all'
+        working-directory: ./scraper
+        env:
+          NEXT_PUBLIC_SUPABASE_URL: ${{ secrets.NEXT_PUBLIC_SUPABASE_URL }}
+          SUPABASE_SERVICE_ROLE_KEY: ${{ secrets.SUPABASE_SERVICE_ROLE_KEY }}
+          RESEND_API_KEY: ${{ secrets.RESEND_API_KEY }}
+          NEXT_PUBLIC_APP_URL: ${{ secrets.NEXT_PUBLIC_APP_URL }}
+        run: python main.py --digest
+
+      - name: Run Platform Scrapers
+        if: github.event.schedule == '0 */6 * * *' || github.event.inputs.job_type == 'scrapers' || github.event.inputs.job_type == 'all'
+        working-directory: ./scraper
+        env:
+          NEXT_PUBLIC_SUPABASE_URL: ${{ secrets.NEXT_PUBLIC_SUPABASE_URL }}
+          SUPABASE_SERVICE_ROLE_KEY: ${{ secrets.SUPABASE_SERVICE_ROLE_KEY }}
+          APIFY_API_TOKEN: ${{ secrets.APIFY_API_TOKEN }}
+        run: python main.py
