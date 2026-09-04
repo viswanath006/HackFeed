@@ -145,10 +145,14 @@ def process_reminders(dry_run: bool = False) -> int:
     Main job: queries reminder_queue where remind_at <= now() and sent = false.
     Sends emails and updates sent = true.
     """
-    db = DatabaseClient()
+    if not settings.validate():
+        print("[Reminders] Skipping: SUPABASE_URL or SUPABASE_SERVICE_ROLE_KEY is not configured in environment.", file=sys.stderr)
+        return 0
+
     now_iso = datetime.now(timezone.utc).isoformat()
 
     try:
+        db = DatabaseClient()
         # Fetch pending reminders
         res = db.client.table("reminder_queue") \
             .select("id, user_id, opportunity_id, remind_at, sent, opportunities(id, title, organizer, type, application_deadline, prize_pool, stipend)") \

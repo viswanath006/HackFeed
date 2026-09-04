@@ -194,10 +194,14 @@ def process_weekly_digest(dry_run: bool = False) -> int:
     Main job: queries users with digest_enabled = true,
     fetches opportunities from the past 7 days, and sends personalized briefings.
     """
-    db = DatabaseClient()
+    if not settings.validate():
+        print("[Digest] Skipping: SUPABASE_URL or SUPABASE_SERVICE_ROLE_KEY is not configured in environment.", file=sys.stderr)
+        return 0
+
     seven_days_ago = (datetime.now(timezone.utc) - timedelta(days=7)).isoformat()
 
     try:
+        db = DatabaseClient()
         # 1. Fetch recent opportunities
         opps_res = db.client.table("opportunities") \
             .select("id, title, organizer, type, application_deadline, prize_pool, stipend, tags, is_featured") \
