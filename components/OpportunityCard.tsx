@@ -14,6 +14,7 @@ import Link from "next/link"
 import DeadlineBadge from "./DeadlineBadge"
 import BookmarkButton from "./BookmarkButton"
 import TagChip from "./TagChip"
+import OpportunityCover from "./OpportunityCover"
 import type { OpportunityRow } from "@/lib/supabase/types"
 import { sanitizeExternalUrl } from "@/lib/utils"
 
@@ -75,73 +76,97 @@ export default function OpportunityCard({
 
   return (
     <article className="group relative border-b border-hairline py-5 transition-colors duration-150 hover:bg-paper-muted/40 px-3 sm:px-4 -mx-3 sm:-mx-4">
-      <div className="flex flex-col sm:flex-row sm:items-start sm:justify-between gap-4">
-        {/* Left column: metadata, title, organizer, tags */}
-        <div className="min-w-0 flex-1">
-          {/* Metadata line */}
-          <div className="flex flex-wrap items-center gap-x-3 gap-y-1 text-xs text-ink-muted mb-1.5">
-            <span className={`pl-2 font-medium text-ink ${platformMeta.accentBorder}`}>
-              {platformMeta.label}
-            </span>
-
-            <span className="text-hairline-dark">/</span>
-
-            <span className={`font-medium ${isHackathon ? "text-ink" : "text-forest"}`}>
-              {op.type === "hackathon" ? "Hackathon" : "Internship"}
-            </span>
-
-            {op.mode && (
-              <>
-                <span className="text-hairline-dark">/</span>
-                <span className="capitalize">{op.mode}</span>
-              </>
-            )}
-
-            {rewardLabel && (
-              <>
-                <span className="text-hairline-dark">/</span>
-                <span className="font-semibold text-forest font-sans">
-                  {rewardLabel}
-                </span>
-              </>
-            )}
-
-            {op.is_featured && (
-              <span className="border-b border-signal text-[11px] font-semibold text-signal">
-                Featured
-              </span>
-            )}
-          </div>
-
-          {/* Title in Fraunces Serif */}
-          <h3 className="text-lg sm:text-xl font-semibold tracking-tight text-ink font-serif leading-snug">
+      <div className="flex flex-col sm:flex-row sm:items-start gap-4 sm:gap-5 justify-between">
+        {/* Left side: Thumbnail + Content */}
+        <div className="flex items-start gap-3.5 sm:gap-4 flex-1 min-w-0">
+          {/* Left Thumbnail (4:3 aspect ratio, compact, scannable) */}
+          <div className="flex-shrink-0 w-20 sm:w-28 md:w-32 self-start">
             <Link
               href={`/opportunities/${op.id}`}
-              className="hover:underline hover:text-ink focus:underline outline-none"
+              tabIndex={-1}
+              aria-hidden="true"
+              className="block focus:outline-none"
             >
-              {op.title}
+              <OpportunityCover
+                src={op.banner_image_url}
+                alt={op.title}
+                title={op.title}
+                type={op.type}
+                platform={op.source_platform}
+                aspectRatio="4/3"
+                variant="thumbnail"
+                className="rounded-xs hover:opacity-90 transition-opacity"
+              />
             </Link>
-          </h3>
+          </div>
 
-          {/* Organizer */}
-          {op.organizer && (
-            <p className="mt-1 text-xs text-ink-muted">
-              Organized by <span className="text-ink font-medium">{op.organizer}</span>
-            </p>
-          )}
+          {/* Main info column: metadata, title, organizer, tags */}
+          <div className="min-w-0 flex-1">
+            {/* Metadata line */}
+            <div className="flex flex-wrap items-center gap-x-3 gap-y-1 text-xs text-ink-muted mb-1.5">
+              <span className={`pl-2 font-medium text-ink ${platformMeta.accentBorder}`}>
+                {platformMeta.label}
+              </span>
 
-          {/* Tags */}
-          {showTags && op.tags && op.tags.length > 0 && (
-            <div className="mt-3 flex flex-wrap gap-1.5">
-              {op.tags.slice(0, 4).map((tag) => (
-                <TagChip key={tag} tag={tag} size="xs" />
-              ))}
+              <span className="text-hairline-dark">/</span>
+
+              <span className={`font-medium ${isHackathon ? "text-ink" : "text-forest"}`}>
+                {op.type === "hackathon" ? "Hackathon" : "Internship"}
+              </span>
+
+              {op.mode && (
+                <>
+                  <span className="text-hairline-dark">/</span>
+                  <span className="capitalize">{op.mode}</span>
+                </>
+              )}
+
+              {rewardLabel && (
+                <>
+                  <span className="text-hairline-dark">/</span>
+                  <span className="font-semibold text-forest font-sans">
+                    {rewardLabel}
+                  </span>
+                </>
+              )}
+
+              {op.is_featured && (
+                <span className="border-b border-signal text-[11px] font-semibold text-signal">
+                  Featured
+                </span>
+              )}
             </div>
-          )}
+
+            {/* Title in Fraunces Serif */}
+            <h3 className="text-lg sm:text-xl font-semibold tracking-tight text-ink font-serif leading-snug">
+              <Link
+                href={`/opportunities/${op.id}`}
+                className="hover:underline hover:text-ink focus:underline outline-none"
+              >
+                {op.title}
+              </Link>
+            </h3>
+
+            {/* Organizer */}
+            {op.organizer && (
+              <p className="mt-1 text-xs text-ink-muted">
+                Organized by <span className="text-ink font-medium">{op.organizer}</span>
+              </p>
+            )}
+
+            {/* Tags */}
+            {showTags && op.tags && op.tags.length > 0 && (
+              <div className="mt-3 flex flex-wrap gap-1.5">
+                {op.tags.slice(0, 4).map((tag) => (
+                  <TagChip key={tag} tag={tag} size="xs" />
+                ))}
+              </div>
+            )}
+          </div>
         </div>
 
         {/* Right column: Typographic deadline count + Action controls */}
-        <div className="flex sm:flex-col items-center sm:items-end justify-between sm:justify-start gap-3 sm:gap-2.5 flex-shrink-0 pt-1">
+        <div className="flex sm:flex-col items-center sm:items-end justify-between sm:justify-start gap-3 sm:gap-2.5 flex-shrink-0 pt-2 sm:pt-1 border-t border-hairline/60 sm:border-0">
           {/* Typographic Deadline */}
           <DeadlineBadge deadline={op.application_deadline} variant="prominent" />
 

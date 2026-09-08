@@ -21,6 +21,7 @@ import TagChip from "@/components/TagChip"
 import BookmarkButton from "@/components/BookmarkButton"
 import AddToCalendarButton from "@/components/AddToCalendarButton"
 import OpportunityCard from "@/components/OpportunityCard"
+import OpportunityCover from "@/components/OpportunityCover"
 import type { OpportunityRow } from "@/lib/supabase/types"
 import { MOCK_OPPORTUNITIES } from "@/lib/mockData"
 import { sanitizeExternalUrl } from "@/lib/utils"
@@ -218,19 +219,20 @@ export default async function OpportunityDetailPage({
               </p>
             )}
 
-            {/* Optional Banner Image — displayed with clean hairline border */}
-            {op.banner_image_url && (
-              <div className="mt-8 relative aspect-[16/8] w-full overflow-hidden border border-hairline bg-paper-muted">
-                <Image
-                  src={op.banner_image_url}
-                  alt={op.title}
-                  fill
-                  unoptimized
-                  className="object-cover"
-                  priority
-                />
-              </div>
-            )}
+            {/* Opportunity Hero Cover — original cover image or programmatic editorial fallback */}
+            <div className="mt-8">
+              <OpportunityCover
+                src={op.banner_image_url}
+                alt={op.title}
+                title={op.title}
+                type={op.type}
+                platform={op.source_platform}
+                aspectRatio="16/7"
+                variant="hero"
+                priority
+                className="w-full rounded-xs"
+              />
+            </div>
 
             {/* Hairline Divider */}
             <div className="my-8 border-b border-hairline" />
