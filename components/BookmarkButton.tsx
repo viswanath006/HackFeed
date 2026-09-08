@@ -90,14 +90,14 @@ export default function BookmarkButton({
         id={`bookmark-btn-${opportunityId}`}
         aria-label={bookmarked ? "Remove bookmark" : "Bookmark this opportunity"}
         aria-pressed={bookmarked}
-        className={`group flex items-center justify-center gap-2 rounded-xl border px-5 py-3 text-sm font-semibold transition-all duration-200 active:scale-95 ${
+        className={`group flex items-center justify-center gap-2 rounded-lg border px-4 py-2.5 text-xs font-semibold transition-all duration-150 active:scale-95 ${
           bookmarked
-            ? "border-violet-500/40 bg-violet-500/20 text-violet-200 hover:bg-violet-500/30 hover:border-violet-500/60"
-            : "border-white/10 bg-white/5 text-zinc-300 hover:border-violet-500/30 hover:bg-white/[0.08] hover:text-violet-300"
+            ? "border-indigo-500/40 bg-indigo-500/15 text-indigo-200 hover:bg-indigo-500/25 hover:border-indigo-500/50"
+            : "border-white/10 bg-white/[0.03] text-slate-300 hover:border-white/20 hover:bg-white/[0.07] hover:text-white"
         } disabled:cursor-not-allowed disabled:opacity-60`}
       >
         <Icon filled={bookmarked} type={iconType} />
-        <span>{bookmarked ? "Bookmarked" : "Save for Later"}</span>
+        <span>{bookmarked ? "Saved" : "Save for Later"}</span>
       </button>
     )
   }
@@ -109,10 +109,10 @@ export default function BookmarkButton({
       id={`bookmark-icon-${opportunityId}`}
       aria-label={bookmarked ? "Remove bookmark" : "Bookmark opportunity"}
       aria-pressed={bookmarked}
-      className={`flex h-8 w-8 items-center justify-center rounded-lg border transition-all duration-200 active:scale-90 ${
+      className={`flex h-8 w-8 items-center justify-center rounded-lg border transition-all duration-150 active:scale-95 ${
         bookmarked
-          ? "border-violet-500/50 bg-violet-500/25 text-violet-300 shadow-sm shadow-violet-500/20"
-          : "border-white/10 bg-white/5 text-zinc-400 hover:border-violet-500/30 hover:bg-white/10 hover:text-violet-300"
+          ? "border-indigo-500/40 bg-indigo-500/15 text-indigo-300 shadow-sm"
+          : "border-white/10 bg-white/[0.03] text-slate-400 hover:border-white/20 hover:bg-white/[0.08] hover:text-slate-200"
       } disabled:cursor-not-allowed disabled:opacity-60`}
     >
       <Icon filled={bookmarked} type={iconType} />

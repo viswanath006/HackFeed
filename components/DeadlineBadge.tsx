@@ -1,13 +1,8 @@
 /**
  * components/DeadlineBadge.tsx
  *
- * Countdown badge with urgency color coding.
- *  < 0 days → "Closed"        (zinc)
- *  0–2 days → "X days left"   (red, pulsing)
- *  3–6 days → "X days left"   (amber)
- *  7–13 days→ "X days left"   (yellow)
- * 14+ days  → formatted date  (emerald)
- * null      → nothing
+ * Professional status and deadline countdown indicator.
+ * Uses clean sans-serif typography, subtle semantic borders, and crisp dot indicators.
  */
 
 interface DeadlineBadgeProps {
@@ -24,8 +19,9 @@ function daysUntil(iso: string): number {
 }
 
 function formatDate(iso: string): string {
-  return new Date(iso).toLocaleDateString("en-IN", {
-    day: "numeric", month: "short", year: "numeric",
+  return new Date(iso).toLocaleDateString("en-US", {
+    month: "short",
+    day: "numeric",
   })
 }
 
@@ -38,30 +34,33 @@ export default function DeadlineBadge({
   const days = daysUntil(deadline)
 
   let label: string
-  let cls: string
+  let badgeCls: string
+  let dotCls: string
   let pulse = false
 
   if (days < 0) {
     label = "Closed"
-    cls   = "bg-zinc-500/15 text-zinc-400 ring-zinc-500/25"
+    badgeCls = "bg-slate-800/80 text-slate-400 border border-slate-700/60"
+    dotCls = "bg-slate-500"
   } else if (days <= 2) {
-    label = days === 0 ? "Closes today!" : `${days}d left`
-    cls   = "bg-red-500/20 text-red-300 ring-red-500/30"
+    label = days === 0 ? "Closes today" : `${days}d left`
+    badgeCls = "bg-rose-500/10 text-rose-300 border border-rose-500/30"
+    dotCls = "bg-rose-400"
     pulse = true
   } else if (days <= 6) {
     label = `${days}d left`
-    cls   = "bg-amber-500/20 text-amber-300 ring-amber-500/30"
-  } else if (days <= 13) {
-    label = `${days}d left`
-    cls   = "bg-yellow-500/15 text-yellow-300 ring-yellow-500/25"
+    badgeCls = "bg-amber-500/10 text-amber-300 border border-amber-500/25"
+    dotCls = "bg-amber-400"
   } else {
-    label = formatDate(deadline)
-    cls   = "bg-emerald-500/15 text-emerald-300 ring-emerald-500/25"
+    label = `Due ${formatDate(deadline)}`
+    badgeCls = "bg-emerald-500/10 text-emerald-400 border border-emerald-500/20"
+    dotCls = "bg-emerald-400"
   }
 
   if (variant === "inline") {
     return (
-      <span className={`font-mono text-[11px] font-semibold ${days < 0 ? "text-zinc-500" : days <= 2 ? "text-red-400" : days <= 6 ? "text-amber-400" : "text-emerald-400"}`}>
+      <span className={`inline-flex items-center gap-1.5 text-xs font-medium ${days < 0 ? "text-slate-500" : days <= 2 ? "text-rose-400" : days <= 6 ? "text-amber-400" : "text-emerald-400"}`}>
+        <span className={`h-1.5 w-1.5 rounded-full ${dotCls}`} />
         {label}
       </span>
     )
@@ -69,15 +68,15 @@ export default function DeadlineBadge({
 
   return (
     <span
-      className={`inline-flex items-center gap-1.5 rounded-full px-2.5 py-0.5 font-mono text-[11px] font-semibold ring-1 ring-inset ${cls}`}
+      className={`inline-flex items-center gap-1.5 rounded-md px-2 py-0.5 text-[11px] font-medium tracking-tight ${badgeCls}`}
     >
-      {pulse && (
-        <span className="relative flex h-1.5 w-1.5 flex-shrink-0">
-          <span className="absolute inline-flex h-full w-full animate-ping rounded-full bg-red-400 opacity-75" />
-          <span className="relative inline-flex h-1.5 w-1.5 rounded-full bg-red-400" />
-        </span>
-      )}
-      {label}
+      <span className="relative flex h-1.5 w-1.5 flex-shrink-0">
+        {pulse && (
+          <span className={`absolute inline-flex h-full w-full animate-ping rounded-full ${dotCls} opacity-75`} />
+        )}
+        <span className={`relative inline-flex h-1.5 w-1.5 rounded-full ${dotCls}`} />
+      </span>
+      <span>{label}</span>
     </span>
   )
 }

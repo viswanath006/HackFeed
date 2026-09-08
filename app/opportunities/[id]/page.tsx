@@ -75,32 +75,32 @@ export async function generateMetadata({
 // ── Platform Brand Colors ──────────────────────────────────────────────────
 
 const PLATFORM_COLORS: Record<string, string> = {
-  unstop:       "bg-orange-500/10 text-orange-300 border-orange-500/25",
+  unstop:       "bg-amber-500/10 text-amber-300 border-amber-500/25",
   devfolio:     "bg-blue-500/10   text-blue-300   border-blue-500/25",
   hackerearth:  "bg-emerald-500/10 text-emerald-300 border-emerald-500/25",
-  h2skill:      "bg-purple-500/10 text-purple-300 border-purple-500/25",
-  hack2skill:   "bg-purple-500/10 text-purple-300 border-purple-500/25",
+  h2skill:      "bg-indigo-500/10 text-indigo-300 border-indigo-500/25",
+  hack2skill:   "bg-indigo-500/10 text-indigo-300 border-indigo-500/25",
 }
 
 function platformCls(platform: string | null): string {
-  if (!platform) return "bg-zinc-500/10 text-zinc-400 border-zinc-500/20"
-  return PLATFORM_COLORS[platform.toLowerCase()] ?? "bg-zinc-500/10 text-zinc-400 border-zinc-500/20"
+  if (!platform) return "bg-slate-800/80 text-slate-400 border-slate-700/60"
+  return PLATFORM_COLORS[platform.toLowerCase()] ?? "bg-slate-800/80 text-slate-300 border-slate-700/60"
 }
 
 // ── Type & Mode Badges ─────────────────────────────────────────────────────
 
 const TYPE_BADGE: Record<string, string> = {
-  hackathon:  "bg-violet-500/15 text-violet-300 border-violet-500/30",
-  internship: "bg-sky-500/15    text-sky-300    border-sky-500/30",
+  hackathon:  "bg-indigo-500/10 text-indigo-300 border-indigo-500/25",
+  internship: "bg-sky-500/10    text-sky-300    border-sky-500/25",
 }
 const MODE_BADGE: Record<string, string> = {
   online:  "bg-emerald-500/10 text-emerald-300 border-emerald-500/25",
-  offline: "bg-orange-500/10  text-orange-300  border-orange-500/25",
+  offline: "bg-slate-800/80   text-slate-300   border-slate-700/60",
   hybrid:  "bg-amber-500/10   text-amber-300   border-amber-500/25",
 }
 const TYPE_GRADIENT: Record<string, string> = {
-  hackathon:  "from-violet-950 via-purple-950/40 to-slate-950",
-  internship: "from-sky-950 via-blue-950/40 to-slate-950",
+  hackathon:  "from-slate-900 via-[#161824] to-[#12141c]",
+  internship: "from-slate-900 via-[#141926] to-[#12141c]",
 }
 
 // ── Metadata Item Row with SVG Icon ────────────────────────────────────────
@@ -109,12 +109,12 @@ function MetaRow({ icon, label, value }: { icon: React.ReactNode; label: string;
   if (!value) return null
   return (
     <div className="flex items-start gap-3">
-      <span className="flex h-7 w-7 flex-shrink-0 items-center justify-center rounded-lg bg-white/[0.04] text-zinc-400 border border-white/[0.08]" aria-hidden="true">
+      <span className="flex h-7 w-7 flex-shrink-0 items-center justify-center rounded-lg bg-white/[0.04] text-slate-400 border border-white/[0.08]" aria-hidden="true">
         {icon}
       </span>
       <div className="min-w-0 flex-1">
-        <p className="text-[10px] font-bold uppercase tracking-wider text-zinc-500">{label}</p>
-        <p className="mt-0.5 font-mono text-xs font-semibold text-zinc-200 break-words">{value}</p>
+        <p className="text-[10px] font-bold uppercase tracking-wider text-slate-500">{label}</p>
+        <p className="mt-0.5 text-xs font-semibold text-slate-200 break-words">{value}</p>
       </div>
     </div>
   )
@@ -199,7 +199,7 @@ export default async function OpportunityDetailPage({
   return (
     <div className="min-h-screen pb-24">
       {/* ── Banner Image / Header ───────────────────────── */}
-      <div className="relative h-60 w-full overflow-hidden sm:h-72 md:h-80">
+      <div className={`relative w-full overflow-hidden border-b border-white/[0.08] ${op.banner_image_url ? "h-56 sm:h-64 md:h-72 bg-slate-900" : "h-28 sm:h-32 bg-gradient-to-r from-slate-900 via-[#151824] to-[#090a0f]"}`}>
         {op.banner_image_url ? (
           <Image
             src={op.banner_image_url}
@@ -210,29 +210,16 @@ export default async function OpportunityDetailPage({
             priority
           />
         ) : (
-          <div className={`h-full w-full bg-gradient-to-br ${TYPE_GRADIENT[op.type] ?? TYPE_GRADIENT.hackathon} flex items-center justify-center`}>
-            <div className="flex h-14 w-14 items-center justify-center rounded-2xl bg-white/[0.05] border border-white/10 text-white/30">
-              {op.type === "hackathon" ? (
-                <svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                  <polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2" />
-                </svg>
-              ) : (
-                <svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                  <rect x="2" y="7" width="20" height="14" rx="2" ry="2" />
-                  <path d="M16 21V5a2 2 0 0 0-2-2h-4a2 2 0 0 0-2 2v16" />
-                </svg>
-              )}
-            </div>
-          </div>
+          <div className="absolute inset-0 bg-grid-pattern opacity-60" />
         )}
         {/* Dark gradient fade */}
-        <div className="absolute inset-0 bg-gradient-to-t from-[#07070c] via-[#07070c]/50 to-transparent" />
+        <div className="absolute inset-0 bg-gradient-to-t from-[#090a0f] via-[#090a0f]/50 to-transparent" />
 
         {/* Back Link Button */}
-        <div className="absolute left-4 top-4 sm:left-8 sm:top-6">
+        <div className="absolute left-4 top-4 sm:left-8 sm:top-6 z-20">
           <Link
             href="/opportunities"
-            className="inline-flex items-center gap-1.5 rounded-lg bg-black/60 px-3.5 py-1.5 text-xs font-semibold text-white/90 backdrop-blur-md transition hover:bg-black/80 hover:text-white border border-white/10"
+            className="inline-flex items-center gap-1.5 rounded-lg bg-[#12141c]/90 px-3.5 py-1.5 text-xs font-semibold text-slate-200 backdrop-blur-md transition hover:bg-[#1a1d29] hover:text-white border border-white/10 shadow-sm"
           >
             ← Back to Feed
           </Link>
@@ -241,38 +228,38 @@ export default async function OpportunityDetailPage({
 
       {/* ── Main Content Container ──────────────────────── */}
       <div className="mx-auto max-w-5xl px-4 sm:px-6 lg:px-8">
-        <div className="-mt-12 mb-8 sm:-mt-16 relative z-10">
+        <div className="-mt-8 sm:-mt-10 relative z-10 mb-8">
           {/* Platform & Type Badges */}
           <div className="flex flex-wrap items-center gap-2 mb-3">
-            <span className={`inline-flex items-center rounded-md border px-2.5 py-0.5 text-xs font-bold capitalize shadow-sm ${TYPE_BADGE[op.type] ?? ""}`}>
+            <span className={`inline-flex items-center rounded-md border px-2.5 py-0.5 text-xs font-semibold capitalize shadow-sm ${TYPE_BADGE[op.type] ?? ""}`}>
               {op.type}
             </span>
             {op.mode && (
-              <span className={`inline-flex items-center rounded-md border px-2.5 py-0.5 text-xs font-semibold capitalize shadow-sm ${MODE_BADGE[op.mode] ?? ""}`}>
+              <span className={`inline-flex items-center rounded-md border px-2.5 py-0.5 text-xs font-medium capitalize shadow-sm ${MODE_BADGE[op.mode] ?? ""}`}>
                 {op.mode}
               </span>
             )}
             {op.source_platform && (
-              <span className={`rounded-md border px-2.5 py-0.5 font-mono text-xs font-bold uppercase tracking-wider shadow-sm ${platformCls(op.source_platform)}`}>
+              <span className={`rounded-md border px-2.5 py-0.5 text-xs font-semibold uppercase tracking-wider shadow-sm ${platformCls(op.source_platform)}`}>
                 {op.source_platform}
               </span>
             )}
             {op.is_featured && (
-              <span className="rounded-md border border-amber-500/30 bg-amber-500/15 px-2.5 py-0.5 text-xs font-bold text-amber-300">
+              <span className="rounded-md border border-amber-500/30 bg-amber-500/15 px-2.5 py-0.5 text-xs font-semibold text-amber-300">
                 Featured
               </span>
             )}
           </div>
 
           {/* Opportunity Title */}
-          <h1 className="font-display text-2xl font-bold leading-tight tracking-tight text-white sm:text-3xl md:text-4xl">
+          <h1 className="font-display text-2xl font-bold leading-tight tracking-tight text-slate-100 sm:text-3xl md:text-4xl">
             {op.title}
           </h1>
 
           {/* Organizer */}
           {op.organizer && (
-            <p className="mt-2 text-sm text-zinc-400 font-medium">
-              Organized by <span className="text-zinc-200 font-semibold">{op.organizer}</span>
+            <p className="mt-2 text-sm text-slate-400 font-normal">
+              Organized by <span className="text-slate-200 font-semibold">{op.organizer}</span>
             </p>
           )}
         </div>
@@ -282,17 +269,17 @@ export default async function OpportunityDetailPage({
           {/* Left Main Content Column (2 cols) */}
           <div className="lg:col-span-2 space-y-6">
             {/* Deadline Banner */}
-            <div className="flex flex-wrap items-center justify-between gap-3 rounded-2xl border border-white/[0.07] bg-[#0d0d16] p-4">
+            <div className="flex flex-wrap items-center justify-between gap-3 rounded-xl border border-white/[0.08] bg-[#12141c] p-4">
               <div className="flex items-center gap-3">
-                <div className="flex h-9 w-9 items-center justify-center rounded-lg bg-white/[0.04] border border-white/10 text-zinc-400">
+                <div className="flex h-9 w-9 items-center justify-center rounded-lg bg-white/[0.04] border border-white/10 text-slate-400">
                   <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
                     <circle cx="12" cy="12" r="10" />
                     <polyline points="12 6 12 12 16 14" />
                   </svg>
                 </div>
                 <div>
-                  <p className="text-[10px] font-bold uppercase tracking-wider text-zinc-400">Application Deadline</p>
-                  <p className="text-xs font-semibold text-zinc-200">
+                  <p className="text-[10px] font-bold uppercase tracking-wider text-slate-400">Application Deadline</p>
+                  <p className="text-xs font-semibold text-slate-200">
                     {op.application_deadline ? formatDate(op.application_deadline) : "Open / Ongoing"}
                   </p>
                 </div>
@@ -302,15 +289,15 @@ export default async function OpportunityDetailPage({
 
             {/* Description Section */}
             {op.description && (
-              <div className="rounded-2xl border border-white/[0.07] bg-[#0d0d16] p-6 sm:p-7">
-                <h2 className="mb-3 text-xs font-bold uppercase tracking-wider text-zinc-400 flex items-center gap-2">
+              <div className="rounded-xl border border-white/[0.08] bg-[#12141c] p-6 sm:p-7">
+                <h2 className="mb-3 text-xs font-bold uppercase tracking-wider text-slate-400 flex items-center gap-2">
                   <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
                     <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z" />
                     <polyline points="14 2 14 8 20 8" />
                   </svg>
                   Overview &amp; Details
                 </h2>
-                <div className="prose prose-invert prose-sm max-w-none text-zinc-300 leading-relaxed whitespace-pre-wrap">
+                <div className="prose prose-invert prose-sm max-w-none text-slate-300 leading-relaxed whitespace-pre-wrap">
                   {op.description}
                 </div>
               </div>
@@ -318,29 +305,29 @@ export default async function OpportunityDetailPage({
 
             {/* Eligibility Section */}
             {op.eligibility && (
-              <div className="rounded-2xl border border-white/[0.07] bg-[#0d0d16] p-6 sm:p-7">
-                <h2 className="mb-2.5 text-xs font-bold uppercase tracking-wider text-zinc-400 flex items-center gap-2">
+              <div className="rounded-xl border border-white/[0.08] bg-[#12141c] p-6 sm:p-7">
+                <h2 className="mb-2.5 text-xs font-bold uppercase tracking-wider text-slate-400 flex items-center gap-2">
                   <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
                     <path d="M22 10v6M2 10l10-5 10 5-10 5z" />
                     <path d="M6 12v5c3 3 9 3 12 0v-5" />
                   </svg>
-                  Eligibility
+                  Eligibility Criteria
                 </h2>
-                <p className="text-sm text-zinc-300 leading-relaxed">{op.eligibility}</p>
+                <p className="text-xs sm:text-sm text-slate-300 leading-relaxed">{op.eligibility}</p>
               </div>
             )}
 
             {/* Tags Section */}
             {op.tags && op.tags.length > 0 && (
-              <div className="rounded-2xl border border-white/[0.07] bg-[#0d0d16] p-6">
-                <h2 className="mb-3 text-xs font-bold uppercase tracking-wider text-zinc-400 flex items-center gap-2">
+              <div className="rounded-xl border border-white/[0.08] bg-[#12141c] p-6">
+                <h2 className="mb-3 text-xs font-bold uppercase tracking-wider text-slate-400 flex items-center gap-2">
                   <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
                     <path d="M20.59 13.41l-7.17 7.17a2 2 0 0 1-2.83 0L2 12V2h10l8.59 8.59a2 2 0 0 1 0 2.82z" />
                     <line x1="7" y1="7" x2="7.01" y2="7" />
                   </svg>
                   Skills &amp; Themes
                 </h2>
-                <div className="flex flex-wrap gap-2">
+                <div className="flex flex-wrap gap-1.5">
                   {op.tags.map((tag) => (
                     <TagChip key={tag} tag={tag} size="sm" />
                   ))}
@@ -352,8 +339,8 @@ export default async function OpportunityDetailPage({
           {/* Right Sidebar Column (1 col) */}
           <div className="space-y-5">
             {/* Primary Outbound Action Card */}
-            <div className="rounded-2xl border border-violet-500/30 bg-[#0d0d16] p-5 shadow-2xl space-y-4">
-              <h3 className="text-xs font-bold uppercase tracking-wider text-zinc-400">Application Gateway</h3>
+            <div className="rounded-xl border border-white/[0.12] bg-[#12141c] p-5 shadow-xl space-y-4">
+              <h3 className="text-xs font-bold uppercase tracking-wider text-slate-400">Application Gateway</h3>
               
               {/* Outbound link */}
               <a
@@ -361,11 +348,11 @@ export default async function OpportunityDetailPage({
                 target="_blank"
                 rel="noopener noreferrer"
                 id="apply-now-btn"
-                className="group flex w-full items-center justify-center gap-2 rounded-xl bg-violet-600 px-5 py-3.5 text-sm font-bold text-white shadow-lg shadow-violet-600/25 transition-all hover:bg-violet-500 active:scale-95"
+                className="group flex w-full items-center justify-center gap-2 rounded-lg bg-indigo-600 px-5 py-3 text-xs font-semibold text-white shadow-md shadow-indigo-600/25 transition-all hover:bg-indigo-500 active:scale-95"
               >
                 Apply on {op.source_platform || "Platform"}
                 <svg
-                  width="13" height="13" viewBox="0 0 14 14" fill="none"
+                  width="12" height="12" viewBox="0 0 14 14" fill="none"
                   className="transition-transform group-hover:translate-x-0.5 group-hover:-translate-y-0.5"
                   aria-hidden="true"
                 >
@@ -385,27 +372,24 @@ export default async function OpportunityDetailPage({
               </div>
 
               {/* Attribution line */}
-              <div className="border-t border-white/[0.06] pt-3.5 text-center">
-                <p className="text-xs text-zinc-500">
-                  Originally posted on{" "}
+              <div className="border-t border-white/[0.06] pt-3 text-center">
+                <p className="text-xs text-slate-400">
+                  Verified listing from{" "}
                   <a
                     href={sanitizeExternalUrl(op.source_url)}
                     target="_blank"
                     rel="noopener noreferrer"
-                    className="font-semibold text-violet-400 hover:text-violet-300 underline underline-offset-2"
+                    className="font-medium text-indigo-400 hover:text-indigo-300 underline underline-offset-2"
                   >
                     {op.source_platform || "Original Platform"}
                   </a>
-                </p>
-                <p className="mt-1 text-[10px] text-zinc-600">
-                  Direct platform redirect for registration.
                 </p>
               </div>
             </div>
 
             {/* Quick Metadata Info Card */}
-            <div className="rounded-2xl border border-white/[0.07] bg-[#0d0d16] p-5 space-y-3.5">
-              <h3 className="text-xs font-bold uppercase tracking-wider text-zinc-400">Opportunity Metadata</h3>
+            <div className="rounded-xl border border-white/[0.08] bg-[#12141c] p-5 space-y-3.5">
+              <h3 className="text-xs font-bold uppercase tracking-wider text-slate-400">Key Metadata</h3>
               <div className="space-y-3">
                 <MetaRow
                   icon={<svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"/><circle cx="12" cy="10" r="3"/></svg>}

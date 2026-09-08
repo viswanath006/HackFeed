@@ -2,17 +2,21 @@
 @tailwind components;
 @tailwind utilities;
 
-/* ── Aesthetic Modern Dark Design Tokens ───────────────────── */
+/* ── Professional SaaS Dark Design Tokens (Linear / Stripe inspired) ── */
 :root {
-  --bg:          #07070c;
-  --surface:     #0d0d16;
-  --surface-subtle: #121220;
-  --border:      rgba(255, 255, 255, 0.07);
-  --border-hover:rgba(255, 255, 255, 0.16);
-  --text:        #ededf4;
-  --text-muted:  #79798c;
-  --accent:      #7c3aed;
-  --accent-light:#9333ea;
+  --bg:             #090a0f;
+  --surface:        #0f1117;
+  --surface-card:   #12141c;
+  --surface-subtle: #171a24;
+  --surface-hover:  #1a1d29;
+  --border:         rgba(255, 255, 255, 0.08);
+  --border-hover:   rgba(255, 255, 255, 0.16);
+  --border-accent:  rgba(99, 102, 241, 0.35);
+  --text:           #f8fafc;
+  --text-secondary: #cbd5e1;
+  --text-muted:     #828fa3;
+  --accent:         #6366f1;
+  --accent-light:   #818cf8;
 }
 
 /* ── Base ──────────────────────────────────────────────────── */
@@ -33,7 +37,7 @@ body {
 
 h1, h2, h3, h4, h5, h6 {
   font-family: var(--font-display), var(--font-sans), system-ui, sans-serif;
-  letter-spacing: -0.028em;
+  letter-spacing: -0.025em;
   text-wrap: balance;
 }
 
@@ -42,12 +46,18 @@ code, pre, kbd, samp {
 }
 
 /* ── Custom Scrollbar ───────────────────────────────────────── */
-::-webkit-scrollbar        { width: 5px; height: 5px; }
+::-webkit-scrollbar        { width: 6px; height: 6px; }
 ::-webkit-scrollbar-track  { background: transparent; }
 ::-webkit-scrollbar-thumb  { background: rgba(255, 255, 255, 0.12); border-radius: 999px; }
-::-webkit-scrollbar-thumb:hover { background: rgba(255, 255, 255, 0.24); }
+::-webkit-scrollbar-thumb:hover { background: rgba(255, 255, 255, 0.22); }
 
 /* ── Typography & Clamp ─────────────────────────────────────── */
+.line-clamp-1 {
+  display: -webkit-box;
+  -webkit-line-clamp: 1;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+}
 .line-clamp-2 {
   display: -webkit-box;
   -webkit-line-clamp: 2;
@@ -61,16 +71,29 @@ code, pre, kbd, samp {
   overflow: hidden;
 }
 
-/* ── Gradient Aesthetics ────────────────────────────────────── */
-.gradient-text {
-  background: linear-gradient(135deg, #ffffff 0%, #d4d4e8 50%, #9d9db8 100%);
+/* ── Subtle Geometric Patterns ──────────────────────────────── */
+.bg-grid-pattern {
+  background-size: 32px 32px;
+  background-image: 
+    linear-gradient(to right, rgba(255, 255, 255, 0.025) 1px, transparent 1px),
+    linear-gradient(to bottom, rgba(255, 255, 255, 0.025) 1px, transparent 1px);
+}
+
+.bg-dot-pattern {
+  background-image: radial-gradient(rgba(255, 255, 255, 0.07) 1px, transparent 1px);
+  background-size: 20px 20px;
+}
+
+/* ── Refined Gradient Typography ────────────────────────────── */
+.gradient-heading {
+  background: linear-gradient(180deg, #ffffff 0%, #cbd5e1 100%);
   -webkit-background-clip: text;
   -webkit-text-fill-color: transparent;
   background-clip: text;
 }
 
 .gradient-brand {
-  background: linear-gradient(135deg, #a78bfa 0%, #c084fc 50%, #818cf8 100%);
+  background: linear-gradient(135deg, #818cf8 0%, #a5b4fc 60%, #c084fc 100%);
   -webkit-background-clip: text;
   -webkit-text-fill-color: transparent;
   background-clip: text;
@@ -78,9 +101,9 @@ code, pre, kbd, samp {
 
 /* ── Glass Surfaces ─────────────────────────────────────────── */
 .glass-panel {
-  background: rgba(13, 13, 22, 0.85);
-  backdrop-filter: blur(20px);
-  -webkit-backdrop-filter: blur(20px);
+  background: rgba(18, 20, 28, 0.75);
+  backdrop-filter: blur(16px);
+  -webkit-backdrop-filter: blur(16px);
   border: 1px solid rgba(255, 255, 255, 0.08);
 }
 

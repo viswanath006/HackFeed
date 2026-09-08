@@ -80,19 +80,19 @@ export default async function SettingsPage() {
   return (
     <div className="min-h-screen pb-24">
       {/* ── Header ── */}
-      <div className="border-b border-white/[0.06] bg-[#07070c]/80 backdrop-blur-xl">
+      <div className="border-b border-white/[0.06] bg-[#090a0f]/80 backdrop-blur-xl">
         <div className="mx-auto max-w-4xl px-4 py-8 sm:px-6 lg:px-8">
-          <div className="inline-flex items-center gap-1.5 rounded-full border border-violet-500/30 bg-violet-500/10 px-3 py-1 text-xs font-semibold text-violet-300">
+          <div className="inline-flex items-center gap-1.5 rounded-full border border-indigo-500/25 bg-indigo-500/10 px-3 py-0.5 text-xs font-semibold text-indigo-300">
             <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
               <path d="M12.22 2h-.44a2 2 0 0 0-2 2v.18a2 2 0 0 1-1 1.73l-.43.25a2 2 0 0 1-2 0l-.15-.08a2 2 0 0 0-2.73.73l-.22.38a2 2 0 0 0 .73 2.73l.15.1a2 2 0 0 1 1 1.72v.51a2 2 0 0 1-1 1.74l-.15.09a2 2 0 0 0-.73 2.73l.22.38a2 2 0 0 0 2.73.73l.15-.08a2 2 0 0 1 2 0l.43.25a2 2 0 0 1 1 1.73V20a2 2 0 0 0 2 2h.44a2 2 0 0 0 2-2v-.18a2 2 0 0 1 1-1.73l.43-.25a2 2 0 0 1 2 0l.15.08a2 2 0 0 0 2.73-.73l.22-.39a2 2 0 0 0-.73-2.73l-.15-.08a2 2 0 0 1-1-1.74v-.5a2 2 0 0 1 1-1.74l.15-.09a2 2 0 0 0 .73-2.73l-.22-.38a2 2 0 0 0-2.73-.73l-.15.08a2 2 0 0 1-2 0l-.43-.25a2 2 0 0 1-1-1.73V4a2 2 0 0 0-2-2z" />
               <circle cx="12" cy="12" r="3" />
             </svg>
             Preferences &amp; Alerts
           </div>
-          <h1 className="mt-3 font-display text-2xl font-bold tracking-tight text-zinc-100 sm:text-3xl">
+          <h1 className="mt-3 font-display text-2xl font-bold tracking-tight text-slate-100 sm:text-3xl">
             Account Settings
           </h1>
-          <p className="mt-1 text-sm text-zinc-400">
+          <p className="mt-1 text-xs sm:text-sm text-slate-400">
             Personalize your recommendations feed, email deadline alerts, and weekly digest briefings.
           </p>
         </div>

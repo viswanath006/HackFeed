@@ -33,8 +33,8 @@ export const metadata: Metadata = {
 function StatPill({ value, label }: { value: number | string; label: string }) {
   return (
     <div className="flex items-center gap-2.5">
-      <span className="font-mono text-xl font-bold text-white tracking-tight">{value}</span>
-      <span className="text-[11px] font-semibold text-zinc-400 uppercase tracking-widest">{label}</span>
+      <span className="text-xl font-bold text-white tracking-tight">{value}</span>
+      <span className="text-[11px] font-medium text-slate-400 uppercase tracking-wider">{label}</span>
     </div>
   )
 }
@@ -52,13 +52,13 @@ function SectionHeading({
 }) {
   return (
     <div className="flex items-center justify-between mb-6">
-      <h2 className="font-display text-xl font-bold tracking-tight text-zinc-100 flex items-center gap-2">
+      <h2 className="font-display text-lg font-bold tracking-tight text-slate-100 flex items-center gap-2">
         {title}
       </h2>
       {href && (
         <Link
           href={href}
-          className="text-xs font-semibold text-violet-400 transition hover:text-violet-300"
+          className="text-xs font-medium text-indigo-400 transition hover:text-indigo-300"
         >
           {linkLabel}
         </Link>
@@ -86,6 +86,8 @@ export default async function HomePage() {
     try {
       const supabase = await createClient()
 
+      const nowIso = new Date().toISOString()
+
       const [
         hCountRes,
         iCountRes,
@@ -109,13 +111,17 @@ export default async function HomePage() {
           .select("*")
           .eq("is_active", true)
           .eq("is_featured", true)
+          .or(`application_deadline.gte.${nowIso},application_deadline.is.null`)
           .order("application_deadline", { ascending: true, nullsFirst: false })
+          .order("created_at", { ascending: false })
           .limit(8),
         supabase
           .from("opportunities")
           .select("*")
           .eq("is_active", true)
+          .or(`application_deadline.gte.${nowIso},application_deadline.is.null`)
           .order("application_deadline", { ascending: true, nullsFirst: false })
+          .order("created_at", { ascending: false })
           .limit(12),
         userId
           ? supabase.from("bookmarks").select("opportunity_id").eq("user_id", userId)
@@ -185,82 +191,78 @@ export default async function HomePage() {
   return (
     <div className="min-h-screen">
       {/* ─────────────────── HERO ──────────────────────── */}
-      <section className="relative overflow-hidden pt-16 pb-20 md:pt-24 md:pb-28">
-        {/* Ambient background glows */}
+      <section className="relative overflow-hidden pt-16 pb-20 md:pt-24 md:pb-28 bg-grid-pattern">
+        {/* Subtle radial ambient highlight */}
         <div className="pointer-events-none absolute inset-0 overflow-hidden" aria-hidden="true">
-          <div className="absolute -top-40 left-1/2 h-[550px] w-[650px] -translate-x-1/2 rounded-full bg-violet-600/15 blur-[140px]" />
-          <div className="absolute top-1/3 -right-32 h-[350px] w-[350px] rounded-full bg-purple-600/10 blur-[120px]" />
-          <div className="absolute -bottom-20 left-0 h-[300px] w-[450px] rounded-full bg-indigo-600/10 blur-[120px]" />
+          <div className="absolute top-0 left-1/2 -translate-x-1/2 h-[380px] w-[700px] rounded-full bg-indigo-600/[0.08] blur-[120px]" />
+          <div className="absolute inset-0 bg-gradient-to-b from-transparent via-[#090a0f]/80 to-[#090a0f]" />
         </div>
 
         <div className="relative mx-auto max-w-5xl px-4 text-center sm:px-6 lg:px-8">
           {/* Eyebrow badge */}
-          <div className="mb-6 inline-flex items-center gap-2 rounded-full border border-violet-500/30 bg-violet-500/10 px-4 py-1.5 text-xs font-semibold text-violet-300 backdrop-blur-md">
+          <div className="mb-6 inline-flex items-center gap-2 rounded-full border border-indigo-500/25 bg-indigo-500/10 px-3.5 py-1 text-xs font-medium text-indigo-300 backdrop-blur-md">
             <span className="relative flex h-2 w-2">
-              <span className="absolute inline-flex h-full w-full animate-ping rounded-full bg-violet-400 opacity-75" />
-              <span className="relative inline-flex h-2 w-2 rounded-full bg-violet-400" />
+              <span className="absolute inline-flex h-full w-full animate-ping rounded-full bg-emerald-400 opacity-75" />
+              <span className="relative inline-flex h-2 w-2 rounded-full bg-emerald-400" />
             </span>
-            Real-time Aggregator for Developers &amp; Students
+            <span>Real-time Opportunity Intelligence</span>
           </div>
 
           {/* Heading */}
-          <h1 className="font-display text-4xl font-extrabold leading-[1.1] tracking-[-0.035em] sm:text-5xl md:text-6xl lg:text-7xl">
-            <span className="bg-gradient-to-r from-white via-zinc-100 to-zinc-400 bg-clip-text text-transparent">
-              All hackathons &amp;
-            </span>
+          <h1 className="font-display text-3xl font-extrabold leading-[1.15] tracking-tight text-white sm:text-5xl md:text-6xl">
+            Engineering challenges &amp; tech roles.
             <br />
-            <span className="bg-gradient-to-r from-violet-400 via-fuchsia-400 to-purple-400 bg-clip-text text-transparent">
-              internships.
-            </span>{" "}
-            <span className="text-zinc-300">One feed.</span>
+            <span className="gradient-brand">
+              Curated in one verified feed.
+            </span>
           </h1>
 
           {/* Subtitle */}
-          <p className="mx-auto mt-6 max-w-2xl text-base leading-relaxed text-zinc-400 sm:text-lg">
-            Never miss a deadline. Browse and filter verified tech challenges, prize hackathons, and high-impact internships from{" "}
-            <span className="font-semibold text-zinc-200">Unstop</span>,{" "}
-            <span className="font-semibold text-zinc-200">Devfolio</span>,{" "}
-            <span className="font-semibold text-zinc-200">HackerEarth</span>, and{" "}
-            <span className="font-semibold text-zinc-200">H2Skill</span>.
+          <p className="mx-auto mt-5 max-w-2xl text-sm sm:text-base leading-relaxed text-slate-400">
+            Never miss an application window. Discover verified prize hackathons, open source sprints, and high-growth internships aggregated continuously from{" "}
+            <span className="font-medium text-slate-200">Unstop</span>,{" "}
+            <span className="font-medium text-slate-200">Devfolio</span>,{" "}
+            <span className="font-medium text-slate-200">HackerEarth</span>, and{" "}
+            <span className="font-medium text-slate-200">H2Skill</span>.
           </p>
 
           {/* CTAs */}
-          <div className="mt-10 flex flex-wrap items-center justify-center gap-4">
+          <div className="mt-8 flex flex-wrap items-center justify-center gap-3">
             <Link
               href="/opportunities"
               id="hero-browse-btn"
-              className="group inline-flex items-center gap-2.5 rounded-2xl bg-gradient-to-r from-violet-600 via-purple-600 to-indigo-600 px-7 py-3.5 text-sm font-bold text-white shadow-xl shadow-violet-600/30 transition-all hover:opacity-95 hover:shadow-violet-600/50 hover:scale-[1.02]"
+              className="group inline-flex items-center gap-2 rounded-lg bg-indigo-600 px-5 py-2.5 text-xs font-semibold text-white shadow-md shadow-indigo-600/25 transition hover:bg-indigo-500 active:scale-95"
             >
-              Browse Full Feed
-              <span className="transition-transform group-hover:translate-x-1" aria-hidden="true">→</span>
+              <span>Explore Opportunities</span>
+              <span className="transition-transform group-hover:translate-x-0.5" aria-hidden="true">→</span>
             </Link>
             <Link
               href="/opportunities?type=hackathon"
-              className="inline-flex items-center gap-2 rounded-xl border border-white/12 bg-white/[0.04] px-6 py-3.5 text-sm font-semibold text-zinc-200 backdrop-blur-md transition hover:border-white/25 hover:bg-white/[0.08]"
+              className="inline-flex items-center gap-1.5 rounded-lg border border-white/10 bg-white/[0.04] px-4 py-2.5 text-xs font-medium text-slate-200 transition hover:bg-white/[0.08] hover:border-white/20"
             >
-              Explore Hackathons
+              Hackathons Only
             </Link>
           </div>
 
           {/* Platform Pills Strip */}
-          <div className="mt-12 flex flex-wrap items-center justify-center gap-2.5">
-            <span className="text-xs text-zinc-500 font-medium mr-2">Aggregated from:</span>
-            <span className="rounded-full border border-orange-500/20 bg-orange-500/10 px-3 py-1 font-mono text-[11px] font-semibold text-orange-300">
+          <div className="mt-10 flex flex-wrap items-center justify-center gap-2">
+            <span className="text-xs text-slate-500 font-medium mr-1.5">Sources:</span>
+            <span className="rounded-md border border-amber-500/20 bg-amber-500/10 px-2.5 py-0.5 text-xs font-medium text-amber-300">
               Unstop
             </span>
-            <span className="rounded-full border border-blue-500/20 bg-blue-500/10 px-3 py-1 font-mono text-[11px] font-semibold text-blue-300">
+            <span className="rounded-md border border-blue-500/20 bg-blue-500/10 px-2.5 py-0.5 text-xs font-medium text-blue-300">
               Devfolio
             </span>
-            <span className="rounded-full border border-emerald-500/20 bg-emerald-500/10 px-3 py-1 font-mono text-[11px] font-semibold text-emerald-300">
+            <span className="rounded-md border border-emerald-500/20 bg-emerald-500/10 px-2.5 py-0.5 text-xs font-medium text-emerald-300">
               HackerEarth
             </span>
-            <span className="rounded-full border border-purple-500/20 bg-purple-500/10 px-3 py-1 font-mono text-[11px] font-semibold text-purple-300">
+            <span className="rounded-md border border-indigo-500/20 bg-indigo-500/10 px-2.5 py-0.5 text-xs font-medium text-indigo-300">
               H2Skill
             </span>
           </div>
 
           {/* Stats Bar */}
-          <div className="mt-12 inline-flex flex-wrap items-center justify-center gap-8 rounded-2xl border border-white/[0.08] bg-[#0f0f1a]/80 px-8 py-4 backdrop-blur-xl">
+          <div className="mt-10 inline-flex flex-wrap items-center justify-center gap-8 rounded-xl border border-white/[0.08] bg-[#12141c]/90 px-7 py-3.5 backdrop-blur-xl shadow-lg">
             <StatPill value={hackathonCount} label="hackathons" />
             <div className="h-4 w-px bg-white/10 hidden sm:block" />
             <StatPill value={internshipCount} label="internships" />
@@ -268,8 +270,8 @@ export default async function HomePage() {
             <StatPill value={platformCount} label="platforms" />
             <div className="h-4 w-px bg-white/10 hidden sm:block" />
             <div className="flex items-center gap-2">
-              <span className="h-2.5 w-2.5 rounded-full bg-emerald-400 animate-pulse" aria-hidden="true" />
-              <span className="font-mono text-[11px] font-bold text-emerald-400 uppercase tracking-wider">Live &amp; Synced</span>
+              <span className="h-2 w-2 rounded-full bg-emerald-400" aria-hidden="true" />
+              <span className="text-[11px] font-semibold text-emerald-400 uppercase tracking-wider">Live Sync</span>
             </div>
           </div>
         </div>
@@ -308,12 +310,12 @@ export default async function HomePage() {
       <section className="py-12 pb-24 border-t border-white/[0.06]">
         <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
           <SectionHeading
-            title="Upcoming & Active Feed"
+            title="Upcoming &amp; Active Feed"
             href="/opportunities"
             linkLabel="View complete feed →"
           />
 
-          <div className="grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
+          <div className="grid grid-cols-1 gap-5 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
             {recentRows.map((op) => (
               <OpportunityCard
                 key={op.id}
@@ -328,7 +330,7 @@ export default async function HomePage() {
           <div className="mt-12 text-center">
             <Link
               href="/opportunities"
-              className="inline-flex items-center gap-2.5 rounded-2xl border border-violet-500/30 bg-violet-500/10 px-8 py-3.5 text-sm font-bold text-violet-200 shadow-lg shadow-violet-950/30 transition hover:bg-violet-500/20 hover:border-violet-500/50"
+              className="inline-flex items-center gap-2 rounded-lg border border-white/10 bg-white/[0.03] px-6 py-3 text-xs font-semibold text-slate-200 transition hover:border-white/20 hover:bg-white/[0.07] active:scale-95"
             >
               Explore all hackathons &amp; internships →
             </Link>

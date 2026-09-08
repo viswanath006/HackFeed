@@ -148,6 +148,16 @@ class BaseScraper(ABC):
                         clean_tags.append(c)
         clean_tags = list(dict.fromkeys(clean_tags))  # deduplicate preserving order
 
+        parsed_deadline = self.parse_datetime(application_deadline)
+        effective_is_active = is_active
+        if parsed_deadline:
+            try:
+                dl_dt = datetime.fromisoformat(parsed_deadline.replace("Z", "+00:00"))
+                if dl_dt < datetime.now(timezone.utc):
+                    effective_is_active = False
+            except Exception:
+                pass
+
         return {
             "title": self.clean_text(title) or "Untitled Opportunity",
             "description": self.clean_text(description),
@@ -159,14 +169,14 @@ class BaseScraper(ABC):
             "mode": normalized_mode,
             "start_date": self.parse_datetime(start_date),
             "end_date": self.parse_datetime(end_date),
-            "application_deadline": self.parse_datetime(application_deadline),
+            "application_deadline": parsed_deadline,
             "prize_pool": self.clean_text(prize_pool),
             "stipend": self.clean_text(stipend),
             "tags": clean_tags if clean_tags else None,
             "eligibility": self.clean_text(eligibility),
             "team_size": self.clean_text(team_size),
             "banner_image_url": banner_image_url.strip() if banner_image_url else None,
-            "is_active": is_active,
+            "is_active": effective_is_active,
             "is_featured": is_featured,
         }
 

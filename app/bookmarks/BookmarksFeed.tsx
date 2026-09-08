@@ -66,35 +66,35 @@ export default function BookmarksFeed({
     <div className="space-y-6">
       {/* ── Top Bar: Filter tabs, count & Export All Action ── */}
       {opportunities.length > 0 && (
-        <div className="flex flex-wrap items-center justify-between gap-4 rounded-2xl border border-white/8 bg-[#0d0d16] p-3 sm:p-4">
+        <div className="flex flex-wrap items-center justify-between gap-4 rounded-xl border border-white/[0.08] bg-[#12141c] p-3 sm:p-4">
           {/* Type filter tabs */}
-          <div className="flex items-center gap-1.5 rounded-xl bg-white/5 p-1">
+          <div className="flex items-center gap-1 rounded-lg bg-white/[0.04] p-1">
             <button
               onClick={() => setTypeFilter("all")}
-              className={`rounded-lg px-3 py-1.5 text-xs font-semibold transition-all ${
+              className={`rounded-md px-3 py-1.5 text-xs font-semibold transition-all ${
                 typeFilter === "all"
-                  ? "bg-violet-600 text-white shadow-md shadow-violet-600/30"
-                  : "text-zinc-400 hover:text-zinc-200"
+                  ? "bg-indigo-600 text-white shadow-sm shadow-indigo-600/25"
+                  : "text-slate-400 hover:text-slate-200"
               }`}
             >
               All ({opportunities.length})
             </button>
             <button
               onClick={() => setTypeFilter("hackathon")}
-              className={`rounded-lg px-3 py-1.5 text-xs font-semibold transition-all ${
+              className={`rounded-md px-3 py-1.5 text-xs font-semibold transition-all ${
                 typeFilter === "hackathon"
-                  ? "bg-violet-600 text-white shadow-md shadow-violet-600/30"
-                  : "text-zinc-400 hover:text-zinc-200"
+                  ? "bg-indigo-600 text-white shadow-sm shadow-indigo-600/25"
+                  : "text-slate-400 hover:text-slate-200"
               }`}
             >
               Hackathons ({hackathonCount})
             </button>
             <button
               onClick={() => setTypeFilter("internship")}
-              className={`rounded-lg px-3 py-1.5 text-xs font-semibold transition-all ${
+              className={`rounded-md px-3 py-1.5 text-xs font-semibold transition-all ${
                 typeFilter === "internship"
-                  ? "bg-violet-600 text-white shadow-md shadow-violet-600/30"
-                  : "text-zinc-400 hover:text-zinc-200"
+                  ? "bg-indigo-600 text-white shadow-sm shadow-indigo-600/25"
+                  : "text-slate-400 hover:text-slate-200"
               }`}
             >
               Internships ({internshipCount})
@@ -105,7 +105,7 @@ export default function BookmarksFeed({
           <div className="flex items-center gap-3">
             <button
               onClick={handleExportAllCalendar}
-              className="inline-flex items-center gap-2 rounded-xl border border-white/10 bg-white/5 px-3.5 py-2 text-xs font-semibold text-zinc-200 transition hover:border-violet-500/40 hover:bg-violet-500/10 hover:text-violet-200 active:scale-95"
+              className="inline-flex items-center gap-2 rounded-lg border border-white/10 bg-white/[0.04] px-3.5 py-2 text-xs font-medium text-slate-200 transition hover:border-indigo-500/40 hover:bg-indigo-500/10 hover:text-indigo-200 active:scale-95"
               title="Export all saved bookmarks into an .ics calendar file"
             >
               <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
@@ -122,25 +122,25 @@ export default function BookmarksFeed({
 
       {/* ── Feed Grid or Empty State ── */}
       {opportunities.length === 0 ? (
-        <div className="rounded-3xl border border-white/8 bg-[#0d0d16]/60 p-8 sm:p-12">
+        <div className="rounded-2xl border border-white/[0.08] bg-[#12141c] p-8 sm:p-12">
           <div className="flex flex-col items-center justify-center text-center">
-            <div className="mb-6 flex h-16 w-16 items-center justify-center rounded-2xl border border-violet-500/20 bg-violet-500/10 text-violet-300 shadow-xl shadow-violet-500/10">
-              <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+            <div className="mb-5 flex h-14 w-14 items-center justify-center rounded-xl border border-indigo-500/20 bg-indigo-500/10 text-indigo-300">
+              <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
                 <path d="M19 21l-7-5-7 5V5a2 2 0 0 1 2-2h10a2 2 0 0 1 2 2z" />
               </svg>
             </div>
-            <h2 className="font-display text-2xl font-bold tracking-tight text-zinc-100">
+            <h2 className="font-display text-xl font-bold tracking-tight text-slate-100">
               No saved opportunities yet
             </h2>
-            <p className="mt-2 max-w-md text-sm leading-relaxed text-zinc-400">
+            <p className="mt-2 max-w-md text-xs sm:text-sm leading-relaxed text-slate-400">
               Bookmark hackathons and internships from the feed to keep track of upcoming deadlines,
               stipends, and team registrations.
             </p>
             <Link
               href="/opportunities"
-              className="mt-8 inline-flex items-center gap-2 rounded-xl bg-violet-600 px-6 py-3 text-sm font-semibold text-white shadow-lg shadow-violet-500/25 transition hover:bg-violet-500 active:scale-95"
+              className="mt-6 inline-flex items-center gap-2 rounded-lg bg-indigo-600 px-5 py-2.5 text-xs font-semibold text-white shadow-sm shadow-indigo-600/25 transition hover:bg-indigo-500 active:scale-95"
             >
-              Explore Feed →
+              Browse Feed Now
             </Link>
           </div>
         </div>

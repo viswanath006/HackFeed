@@ -181,9 +181,16 @@ class UnstopScraper(BaseScraper):
                     banner_url = f"https://d8it4huxumps7.cloudfront.net/{banner_url.lstrip('/')}"
 
         # Dates & Deadlines
-        start_date = raw.get("start_date") or raw.get("start_at") or raw.get("start_time")
-        end_date = raw.get("end_date") or raw.get("end_at") or raw.get("end_time")
-        deadline = raw.get("regnRequirements", {}).get("end_regn_date") or raw.get("end_regn_date") or raw.get("deadline")
+        regn_req = raw.get("regnRequirements", {}) if isinstance(raw.get("regnRequirements"), dict) else {}
+        start_date = regn_req.get("start_regn_dt") or raw.get("start_date") or raw.get("start_at") or raw.get("start_time")
+        end_date = regn_req.get("end_regn_dt") or raw.get("end_date") or raw.get("end_at") or raw.get("end_time")
+        deadline = regn_req.get("end_regn_dt") or raw.get("end_date") or raw.get("end_regn_date") or raw.get("deadline")
+
+        # Determine active status from Unstop payload
+        is_active = True
+        status_val = str(raw.get("status", "")).upper()
+        if raw.get("regn_open") == 0 or status_val in ["CLOSED", "EXPIRED", "CANCELLED"]:
+            is_active = False
 
         # Prize & Stipend
         prizes = raw.get("prizes") or raw.get("prize_amount")
@@ -254,7 +261,8 @@ class UnstopScraper(BaseScraper):
             tags=tags,
             eligibility=str(eligibility) if eligibility else None,
             team_size=team_size,
-            banner_image_url=banner_url
+            banner_image_url=banner_url,
+            is_active=is_active
         )
 
     def _scrape_html(self, category: str, opportunity_type: str) -> List[Dict[str, Any]]:

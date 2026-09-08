@@ -10,22 +10,34 @@ import sys
 from pathlib import Path
 from dotenv import load_dotenv
 
-# Search for .env in current scraper directory first, then root directory
-env_path = Path(__file__).resolve().parent / ".env"
+# Load root .env.local first (primary application config), then scraper/.env as override if valid
 root_env_path = Path(__file__).resolve().parent.parent / ".env.local"
+env_path = Path(__file__).resolve().parent / ".env"
 
-if env_path.exists():
-    load_dotenv(dotenv_path=env_path)
-elif root_env_path.exists():
+if root_env_path.exists():
     load_dotenv(dotenv_path=root_env_path)
+if env_path.exists():
+    load_dotenv(dotenv_path=env_path, override=False)
 else:
     load_dotenv()
 
 
+def _clean_env_val(key: str, default: str = "") -> str:
+    val = os.getenv(key, default)
+    if val and ("<your-" in val or "your-project-ref" in val):
+        return ""
+    return val
+
+
 class Settings:
     # Supabase credentials (Service role required to bypass RLS)
-    SUPABASE_URL: str = os.getenv("SUPABASE_URL", os.getenv("NEXT_PUBLIC_SUPABASE_URL", ""))
-    SUPABASE_SERVICE_ROLE_KEY: str = os.getenv("SUPABASE_SERVICE_ROLE_KEY", "")
+    SUPABASE_URL: str = (
+        _clean_env_val("SUPABASE_URL") or
+        _clean_env_val("NEXT_PUBLIC_SUPABASE_URL")
+    )
+    SUPABASE_SERVICE_ROLE_KEY: str = (
+        _clean_env_val("SUPABASE_SERVICE_ROLE_KEY")
+    )
 
     # Apify API token (Used when any platform is set to "apify" mode)
     APIFY_API_TOKEN: str = os.getenv("APIFY_API_TOKEN", "")

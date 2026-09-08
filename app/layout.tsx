@@ -49,7 +49,7 @@ export const metadata: Metadata = {
 export default function RootLayout({ children }: { children: React.ReactNode }) {
   return (
     <html lang="en" className={`${displayFont.variable} ${sansFont.variable} ${monoFont.variable} font-sans`}>
-      <body className="min-h-screen bg-[#07070c] font-sans text-zinc-100 antialiased selection:bg-violet-500/30 selection:text-white">
+      <body className="min-h-screen bg-[#090a0f] font-sans text-slate-100 antialiased selection:bg-indigo-500/30 selection:text-white">
         <ToastProvider>
           <Navbar />
           {children}

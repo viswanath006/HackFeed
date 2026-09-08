@@ -106,7 +106,7 @@ export default function SignupPage() {
         .auth-root {
           font-family: var(--font-sans), system-ui, sans-serif;
           min-height: calc(100vh - 4rem);
-          background: #07070c;
+          background: #090a0f;
           display: flex;
           align-items: center;
           justify-content: center;
@@ -118,25 +118,26 @@ export default function SignupPage() {
         .auth-root::before {
           content: '';
           position: fixed;
-          top: -30%;
-          right: -15%;
-          width: 70%;
-          height: 70%;
-          background: radial-gradient(ellipse, rgba(124, 58, 237, 0.15) 0%, transparent 70%);
+          top: -20%;
+          right: 50%;
+          transform: translateX(50%);
+          width: 60%;
+          height: 50%;
+          background: radial-gradient(ellipse, rgba(99, 102, 241, 0.08) 0%, transparent 70%);
           pointer-events: none;
         }
 
         .card {
-          background: rgba(13, 13, 22, 0.85);
+          background: #12141c;
           border: 1px solid rgba(255,255,255,0.08);
           backdrop-filter: blur(20px);
-          border-radius: 1.25rem;
+          border-radius: 1rem;
           padding: 2.25rem;
           width: 100%;
           max-width: 420px;
           position: relative;
           z-index: 1;
-          box-shadow: 0 30px 60px rgba(0,0,0,0.4);
+          box-shadow: 0 25px 50px -12px rgba(0,0,0,0.5);
         }
 
         .logo {
@@ -147,30 +148,30 @@ export default function SignupPage() {
           text-decoration: none;
         }
         .logo-icon {
-          width: 32px; height: 32px;
-          background: linear-gradient(135deg, #7c3aed, #6366f1);
-          border-radius: 8px;
+          width: 28px; height: 28px;
+          background: #4f46e5;
+          border-radius: 6px;
           display: flex; align-items: center; justify-content: center;
         }
         .logo-text {
           font-family: var(--font-display), sans-serif;
-          font-size: 1.25rem;
-          font-weight: 800;
+          font-size: 1.15rem;
+          font-weight: 700;
           color: #fff;
           letter-spacing: -0.02em;
         }
 
         h1 {
           font-family: var(--font-display), sans-serif;
-          font-size: 1.5rem;
+          font-size: 1.35rem;
           font-weight: 700;
           color: #fff;
           letter-spacing: -0.02em;
           margin-bottom: 0.35rem;
         }
         .subtitle {
-          font-size: 0.85rem;
-          color: rgba(255,255,255,0.45);
+          font-size: 0.82rem;
+          color: rgba(255,255,255,0.5);
           margin-bottom: 1.5rem;
         }
 
@@ -189,42 +190,42 @@ export default function SignupPage() {
         .field label {
           display: block;
           font-size: 0.8rem;
-          font-weight: 600;
-          color: rgba(255,255,255,0.6);
+          font-weight: 500;
+          color: rgba(255,255,255,0.7);
           margin-bottom: 0.4rem;
         }
         .field input {
           width: 100%;
           padding: 0.65rem 0.85rem;
-          background: rgba(255,255,255,0.05);
+          background: rgba(255,255,255,0.03);
           border: 1px solid rgba(255,255,255,0.1);
-          border-radius: 0.6rem;
+          border-radius: 0.5rem;
           color: #fff;
-          font-size: 0.9rem;
+          font-size: 0.88rem;
           font-family: inherit;
           outline: none;
-          transition: border-color 0.2s;
+          transition: border-color 0.15s;
         }
-        .field input::placeholder { color: rgba(255,255,255,0.25); }
+        .field input::placeholder { color: rgba(255,255,255,0.3); }
         .field input:focus {
-          border-color: rgba(124, 58, 237, 0.6);
+          border-color: rgba(99, 102, 241, 0.6);
         }
 
         .btn-primary {
           width: 100%;
-          padding: 0.7rem;
-          background: #7c3aed;
+          padding: 0.65rem;
+          background: #4f46e5;
           border: none;
-          border-radius: 0.65rem;
+          border-radius: 0.5rem;
           color: #fff;
-          font-size: 0.9rem;
+          font-size: 0.88rem;
           font-weight: 600;
           font-family: inherit;
           cursor: pointer;
           transition: background 0.15s;
           margin-top: 0.25rem;
         }
-        .btn-primary:hover:not(:disabled) { background: #6d28d9; }
+        .btn-primary:hover:not(:disabled) { background: #4338ca; }
         .btn-primary:disabled { opacity: 0.5; cursor: not-allowed; }
 
         .divider {
@@ -236,26 +237,26 @@ export default function SignupPage() {
           background: rgba(255,255,255,0.08);
         }
         .divider span {
-          font-size: 0.75rem; color: rgba(255,255,255,0.3); font-weight: 500;
+          font-size: 0.75rem; color: rgba(255,255,255,0.4); font-weight: 500;
         }
 
         .btn-google {
           width: 100%;
-          padding: 0.7rem;
-          background: rgba(255,255,255,0.04);
+          padding: 0.65rem;
+          background: rgba(255,255,255,0.03);
           border: 1px solid rgba(255,255,255,0.1);
-          border-radius: 0.65rem;
+          border-radius: 0.5rem;
           color: rgba(255,255,255,0.85);
-          font-size: 0.88rem;
+          font-size: 0.85rem;
           font-weight: 600;
           font-family: inherit;
           cursor: pointer;
           display: flex; align-items: center; justify-content: center; gap: 0.6rem;
-          transition: background 0.2s, border-color 0.2s;
+          transition: background 0.15s, border-color 0.15s;
         }
         .btn-google:hover:not(:disabled) {
-          background: rgba(255,255,255,0.08);
-          border-color: rgba(255,255,255,0.16);
+          background: rgba(255,255,255,0.07);
+          border-color: rgba(255,255,255,0.18);
         }
         .btn-google:disabled { opacity: 0.5; cursor: not-allowed; }
 
@@ -263,14 +264,14 @@ export default function SignupPage() {
 
         .footer-text {
           text-align: center;
-          margin-top: 1.4rem;
-          font-size: 0.82rem;
-          color: rgba(255,255,255,0.4);
+          margin-top: 1.5rem;
+          font-size: 0.8rem;
+          color: rgba(255,255,255,0.45);
         }
         .footer-text a {
-          color: #a78bfa; text-decoration: none; font-weight: 600;
+          color: #818cf8; text-decoration: none; font-weight: 500;
         }
-        .footer-text a:hover { color: #c4b5fd; }
+        .footer-text a:hover { text-decoration: underline; }
 
         .spinner {
           display: inline-block;

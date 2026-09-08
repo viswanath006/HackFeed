@@ -72,26 +72,26 @@ export default function SettingsForm({
   }
 
   return (
-    <form onSubmit={handleSubmit} className="space-y-8">
+    <form onSubmit={handleSubmit} className="space-y-6">
       {/* ── Account Summary ── */}
-      <div className="rounded-2xl border border-white/[0.08] bg-[#0d0d16] p-6">
-        <h2 className="text-xs font-bold uppercase tracking-wider text-zinc-400 mb-2">Account Profile</h2>
+      <div className="rounded-xl border border-white/[0.08] bg-[#12141c] p-5 sm:p-6">
+        <h2 className="text-xs font-bold uppercase tracking-wider text-slate-400 mb-2">Account Profile</h2>
         <div className="flex items-center justify-between">
           <div>
-            <p className="text-sm font-semibold text-zinc-100">{userEmail}</p>
-            <p className="text-xs text-zinc-500">Student Account</p>
+            <p className="text-sm font-semibold text-slate-100">{userEmail}</p>
+            <p className="text-xs text-slate-400">Student Developer Account</p>
           </div>
-          <span className="rounded-md border border-emerald-500/30 bg-emerald-500/10 px-2.5 py-0.5 text-xs font-semibold text-emerald-400">
+          <span className="rounded-md border border-emerald-500/25 bg-emerald-500/10 px-2.5 py-0.5 text-xs font-medium text-emerald-400">
             Active
           </span>
         </div>
       </div>
 
       {/* ── Preferred Opportunity Type ── */}
-      <div className="rounded-2xl border border-white/[0.08] bg-[#0d0d16] p-6 space-y-4">
+      <div className="rounded-xl border border-white/[0.08] bg-[#12141c] p-5 sm:p-6 space-y-4">
         <div>
-          <h2 className="text-xs font-bold uppercase tracking-wider text-zinc-400">Preferred Opportunities</h2>
-          <p className="text-xs text-zinc-400 mt-1">
+          <h2 className="text-xs font-bold uppercase tracking-wider text-slate-400">Preferred Opportunities</h2>
+          <p className="text-xs text-slate-400 mt-1">
             Choose what type of listings you would like HackFeed to prioritize in your recommendations.
           </p>
         </div>
@@ -113,7 +113,7 @@ export default function SettingsForm({
             {
               id: "hackathon",
               label: "Hackathons Only",
-              desc: "Prize sprints & builds",
+              desc: "Engineering challenges",
               icon: (
                 <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
                   <polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2" />
@@ -123,7 +123,7 @@ export default function SettingsForm({
             {
               id: "internship",
               label: "Internships Only",
-              desc: "Roles & hiring programs",
+              desc: "Tech job roles",
               icon: (
                 <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
                   <rect x="2" y="7" width="20" height="14" rx="2" ry="2" />
@@ -131,30 +131,35 @@ export default function SettingsForm({
                 </svg>
               ),
             },
-          ].map((opt) => (
-            <button
-              key={opt.id}
-              type="button"
-              onClick={() => setPreferredType(opt.id as PreferenceOpportunityType)}
-              className={`flex flex-col items-start p-4 rounded-xl border text-left transition-all duration-200 ${
-                preferredType === opt.id
-                  ? "border-violet-500/60 bg-violet-500/15 ring-1 ring-violet-500/30 text-violet-300"
-                  : "border-white/10 bg-white/[0.03] hover:border-white/20 hover:bg-white/[0.06] text-zinc-400"
-              }`}
-            >
-              <div className="mb-2 text-zinc-300">{opt.icon}</div>
-              <span className="text-sm font-bold text-zinc-100">{opt.label}</span>
-              <span className="text-[11px] text-zinc-400 mt-0.5">{opt.desc}</span>
-            </button>
-          ))}
+          ].map((item) => {
+            const isSelected = preferredType === item.id
+            return (
+              <button
+                key={item.id}
+                type="button"
+                onClick={() => setPreferredType(item.id as "both" | "hackathon" | "internship")}
+                className={`flex flex-col items-start p-4 rounded-xl border text-left transition-all duration-150 ${
+                  isSelected
+                    ? "border-indigo-500/50 bg-indigo-500/10 text-white shadow-sm"
+                    : "border-white/[0.08] bg-white/[0.02] text-slate-400 hover:border-white/20 hover:bg-white/[0.04] hover:text-slate-200"
+                }`}
+              >
+                <span className={`mb-2.5 flex h-8 w-8 items-center justify-center rounded-lg ${isSelected ? "bg-indigo-600 text-white" : "bg-white/5 text-slate-400 border border-white/10"}`}>
+                  {item.icon}
+                </span>
+                <span className="text-xs font-bold text-slate-100">{item.label}</span>
+                <span className="text-[11px] text-slate-400 mt-0.5">{item.desc}</span>
+              </button>
+            )
+          })}
         </div>
       </div>
 
       {/* ── Preferred Tags & Tech Interests ── */}
-      <div className="rounded-2xl border border-white/[0.08] bg-[#0d0d16] p-6 space-y-4">
+      <div className="rounded-xl border border-white/[0.08] bg-[#12141c] p-5 sm:p-6 space-y-4">
         <div>
-          <h2 className="text-xs font-bold uppercase tracking-wider text-zinc-400">Interests &amp; Skills</h2>
-          <p className="text-xs text-zinc-400 mt-1">
+          <h2 className="text-xs font-bold uppercase tracking-wider text-slate-400">Interests &amp; Skills</h2>
+          <p className="text-xs text-slate-400 mt-1">
             Select tags you are interested in. We will use these to curate recommendations and weekly digests.
           </p>
         </div>
@@ -166,15 +171,15 @@ export default function SettingsForm({
             value={tagSearch}
             onChange={(e) => setTagSearch(e.target.value)}
             placeholder="Search tags (AI, Web3, Python, Cloud)…"
-            className="w-full max-w-sm rounded-xl border border-white/10 bg-white/5 px-3.5 py-2 text-xs text-zinc-100 placeholder-zinc-500 outline-none focus:border-violet-500/60"
+            className="w-full max-w-sm rounded-lg border border-white/10 bg-white/[0.03] px-3.5 py-2 text-xs text-slate-100 placeholder-slate-500 outline-none focus:border-indigo-500/60 focus:bg-[#161824]"
           />
-          <span className="text-xs text-zinc-400 font-medium ml-4">
+          <span className="text-xs text-slate-400 font-medium ml-4">
             {preferredTags.length} selected
           </span>
         </div>
 
         {/* Tags cloud */}
-        <div className="flex flex-wrap gap-1.5 max-h-56 overflow-y-auto p-1 border border-white/[0.06] rounded-xl bg-black/20">
+        <div className="flex flex-wrap gap-1.5 max-h-56 overflow-y-auto p-2 border border-white/[0.06] rounded-lg bg-black/20">
           {filteredTags.map((tag) => {
             const selected = preferredTags.includes(tag)
             return (
@@ -182,10 +187,10 @@ export default function SettingsForm({
                 key={tag}
                 type="button"
                 onClick={() => toggleTag(tag)}
-                className={`inline-flex items-center gap-1.5 rounded-lg px-3 py-1.5 text-xs font-semibold transition-all duration-150 ${
+                className={`inline-flex items-center gap-1.5 rounded-md px-2.5 py-1 text-xs font-medium transition-all duration-150 ${
                   selected
-                    ? "bg-violet-600 text-white shadow-md shadow-violet-600/30 scale-105"
-                    : "border border-white/10 bg-white/5 text-zinc-300 hover:border-white/20 hover:text-white"
+                    ? "bg-indigo-600 text-white shadow-sm shadow-indigo-600/30"
+                    : "border border-white/10 bg-white/[0.03] text-slate-300 hover:border-white/20 hover:text-white"
                 }`}
               >
                 <span>{selected ? "✓" : "+"}</span>
@@ -194,26 +199,26 @@ export default function SettingsForm({
             )
           })}
           {filteredTags.length === 0 && (
-            <p className="text-xs text-zinc-500 p-4 text-center w-full">No matching tags found.</p>
+            <p className="text-xs text-slate-500 p-4 text-center w-full">No matching tags found.</p>
           )}
         </div>
       </div>
 
       {/* ── Notification Toggles ── */}
-      <div className="rounded-2xl border border-white/[0.08] bg-[#0d0d16] p-6 space-y-6">
-        <h2 className="text-xs font-bold uppercase tracking-wider text-zinc-400">Email Notifications</h2>
+      <div className="rounded-xl border border-white/[0.08] bg-[#12141c] p-5 sm:p-6 space-y-6">
+        <h2 className="text-xs font-bold uppercase tracking-wider text-slate-400">Email Notifications</h2>
 
         {/* Reminder Toggle */}
         <div className="flex items-start justify-between gap-4">
           <div>
-            <p className="text-sm font-bold text-zinc-100 flex items-center gap-2">
-              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="text-zinc-400">
+            <p className="text-sm font-semibold text-slate-100 flex items-center gap-2">
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="text-slate-400">
                 <circle cx="12" cy="12" r="10" />
                 <polyline points="12 6 12 12 16 14" />
               </svg>
               Application Deadline Reminders
             </p>
-            <p className="text-xs text-zinc-400 mt-1 leading-relaxed">
+            <p className="text-xs text-slate-400 mt-1 leading-relaxed">
               Automatically receive email alerts 3 days and 1 day before the deadline of your bookmarked opportunities.
             </p>
           </div>
@@ -223,7 +228,7 @@ export default function SettingsForm({
             aria-checked={reminderEnabled}
             onClick={() => setReminderEnabled(!reminderEnabled)}
             className={`relative inline-flex h-6 w-11 flex-shrink-0 cursor-pointer rounded-full border-2 border-transparent transition-colors duration-200 ease-in-out focus:outline-none ${
-              reminderEnabled ? "bg-violet-600" : "bg-zinc-700"
+              reminderEnabled ? "bg-indigo-600" : "bg-slate-700"
             }`}
           >
             <span
@@ -239,14 +244,14 @@ export default function SettingsForm({
         {/* Digest Toggle */}
         <div className="flex items-start justify-between gap-4">
           <div>
-            <p className="text-sm font-bold text-zinc-100 flex items-center gap-2">
-              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="text-zinc-400">
+            <p className="text-sm font-semibold text-slate-100 flex items-center gap-2">
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="text-slate-400">
                 <path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z" />
                 <polyline points="22,6 12,13 2,6" />
               </svg>
               Weekly Newsletter Digest
             </p>
-            <p className="text-xs text-zinc-400 mt-1 leading-relaxed">
+            <p className="text-xs text-slate-400 mt-1 leading-relaxed">
               Get a weekly Monday morning briefing of new opportunities tailored to your tech interests and skills.
             </p>
           </div>
@@ -256,7 +261,7 @@ export default function SettingsForm({
             aria-checked={digestEnabled}
             onClick={() => setDigestEnabled(!digestEnabled)}
             className={`relative inline-flex h-6 w-11 flex-shrink-0 cursor-pointer rounded-full border-2 border-transparent transition-colors duration-200 ease-in-out focus:outline-none ${
-              digestEnabled ? "bg-violet-600" : "bg-zinc-700"
+              digestEnabled ? "bg-indigo-600" : "bg-slate-700"
             }`}
           >
             <span
@@ -273,7 +278,7 @@ export default function SettingsForm({
         <button
           type="submit"
           disabled={isPending}
-          className="inline-flex items-center gap-2 rounded-xl bg-violet-600 px-8 py-3 text-xs font-bold text-white shadow-lg shadow-violet-600/25 transition hover:bg-violet-500 active:scale-95 disabled:opacity-50"
+          className="inline-flex items-center gap-2 rounded-lg bg-indigo-600 hover:bg-indigo-500 px-6 py-2.5 text-xs font-semibold text-white shadow-md shadow-indigo-600/25 transition active:scale-95 disabled:opacity-50"
         >
           {isPending ? (
             <>

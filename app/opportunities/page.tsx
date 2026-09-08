@@ -71,12 +71,17 @@ export default async function OpportunitiesPage({
         query = query.or(`title.ilike.%${params.q}%,organizer.ilike.%${params.q}%`)
       }
 
+      const nowIso = new Date().toISOString()
       if (params.sort === "newest") {
         query = query.order("created_at", { ascending: false })
       } else if (params.sort === "prize") {
         query = query.order("prize_pool", { ascending: false, nullsFirst: false })
       } else {
-        query = query.order("application_deadline", { ascending: true, nullsFirst: false })
+        // Soonest upcoming deadline first; exclude expired past dates
+        query = query
+          .or(`application_deadline.gte.${nowIso},application_deadline.is.null`)
+          .order("application_deadline", { ascending: true, nullsFirst: false })
+          .order("created_at", { ascending: false })
       }
 
       const [
@@ -163,23 +168,26 @@ export default async function OpportunitiesPage({
   return (
     <div className="min-h-screen pb-20">
       {/* Header Banner */}
-      <div className="border-b border-white/[0.06] bg-[#07070d]/80 backdrop-blur-xl">
+      <div className="border-b border-white/[0.06] bg-[#090a0f]/80 backdrop-blur-xl">
         <div className="mx-auto max-w-7xl px-4 py-8 sm:px-6 lg:px-8">
           <div className="flex flex-wrap items-center justify-between gap-4">
             <div>
-              <h1 className="font-display text-2xl font-extrabold tracking-tight text-white sm:text-3xl">
+              <h1 className="font-display text-2xl font-bold tracking-tight text-slate-100 sm:text-3xl">
                 Browse Opportunities
               </h1>
-              <p className="mt-1.5 text-sm text-zinc-400">
-                Verified hackathons, innovation challenges, and internships across Unstop, Devfolio, HackerEarth &amp; H2Skill.
+              <p className="mt-1.5 text-xs sm:text-sm text-slate-400">
+                Verified hackathons, innovation challenges, and tech internships across Unstop, Devfolio, HackerEarth &amp; H2Skill.
               </p>
             </div>
 
-            {/* Quick platform indicator */}
-            <div className="flex items-center gap-2">
-              <span className="text-xs text-zinc-500 font-medium">Aggregating from:</span>
-              <span className="rounded-xl border border-white/10 bg-white/5 px-3 py-1 font-mono text-xs font-semibold text-zinc-300">
-                4 Platforms Live
+            {/* Clean platform indicator */}
+            <div className="flex items-center gap-2 rounded-lg border border-white/[0.08] bg-[#12141c] px-3 py-1.5">
+              <span className="relative flex h-2 w-2">
+                <span className="absolute inline-flex h-full w-full animate-ping rounded-full bg-emerald-400 opacity-75" />
+                <span className="relative inline-flex h-2 w-2 rounded-full bg-emerald-400" />
+              </span>
+              <span className="text-xs font-medium text-slate-300">
+                4 Platforms Synced Live
               </span>
             </div>
           </div>

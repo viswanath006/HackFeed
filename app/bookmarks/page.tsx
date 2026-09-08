@@ -54,26 +54,26 @@ export default async function BookmarksPage() {
   return (
     <div className="min-h-screen pb-20">
       {/* ── Page Header ────────────────────────────────────────── */}
-      <div className="border-b border-white/[0.06] bg-[#07070c]/80 backdrop-blur-xl">
+      <div className="border-b border-white/[0.06] bg-[#090a0f]/80 backdrop-blur-xl">
         <div className="mx-auto max-w-7xl px-4 py-8 sm:px-6 lg:px-8">
           <div className="flex flex-wrap items-center justify-between gap-4">
             <div>
-              <div className="inline-flex items-center gap-1.5 rounded-full border border-violet-500/30 bg-violet-500/10 px-3 py-1 text-xs font-semibold text-violet-300">
+              <div className="inline-flex items-center gap-1.5 rounded-full border border-indigo-500/25 bg-indigo-500/10 px-3 py-0.5 text-xs font-semibold text-indigo-300">
                 <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
                   <path d="M19 21l-7-5-7 5V5a2 2 0 0 1 2-2h10a2 2 0 0 1 2 2z" />
                 </svg>
                 Saved Opportunities
               </div>
-              <h1 className="mt-3 font-display text-2xl font-bold tracking-tight text-zinc-100 sm:text-3xl">
+              <h1 className="mt-3 font-display text-2xl font-bold tracking-tight text-slate-100 sm:text-3xl">
                 My Bookmarks
               </h1>
-              <p className="mt-1 text-sm text-zinc-400">
-                Keep track of your saved hackathons &amp; internships and their application deadlines.
+              <p className="mt-1 text-xs sm:text-sm text-slate-400">
+                Keep track of your saved hackathons &amp; internships and their upcoming deadlines.
               </p>
             </div>
-            <div className="rounded-2xl border border-white/10 bg-white/[0.03] px-4 py-2.5 text-center">
-              <p className="text-[11px] font-medium uppercase tracking-wider text-zinc-500">Total Saved</p>
-              <p className="font-mono text-xl font-bold text-violet-300">{opportunities.length}</p>
+            <div className="rounded-xl border border-white/[0.08] bg-[#12141c] px-4 py-2.5 text-center shadow-sm">
+              <p className="text-[10px] font-bold uppercase tracking-wider text-slate-400">Total Saved</p>
+              <p className="text-xl font-bold text-indigo-300 mt-0.5">{opportunities.length}</p>
             </div>
           </div>
         </div>
