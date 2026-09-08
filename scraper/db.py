@@ -139,3 +139,23 @@ class DatabaseClient:
             print(f"[AUDIT LOG] {source_platform}: status={status}, scraped={items_scraped}, added={items_added}, updated={items_updated}")
         except Exception as e:
             print(f"[DB LOG ERROR] Failed to log scrape run for {source_platform}: {e}")
+
+    def cleanup_expired_opportunities(self) -> int:
+        """
+        Deactivates opportunities whose application deadline has passed.
+        Runs automatically on every scrape run to keep the feed fresh.
+        """
+        try:
+            now_iso = datetime.now(timezone.utc).isoformat()
+            response = self.client.table("opportunities") \
+                .update({"is_active": False}) \
+                .lt("application_deadline", now_iso) \
+                .eq("is_active", True) \
+                .execute()
+            count = len(response.data) if response.data else 0
+            if count > 0:
+                print(f"[DB CLEANUP] Deactivated {count} expired opportunities.")
+            return count
+        except Exception as e:
+            print(f"[DB CLEANUP ERROR] Failed to deactivate expired opportunities: {e}")
+            return 0

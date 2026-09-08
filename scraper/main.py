@@ -132,6 +132,10 @@ def run_all_scrapers(target_platform: Optional[str] = None) -> List[Dict[str, An
         res = run_single_scraper(platform_name, db)
         results.append(res)
 
+    # Deactivate any expired opportunities automatically
+    if db:
+        db.cleanup_expired_opportunities()
+
     print("\n============================================================")
     print("  Scrape Run Summary")
     print("============================================================")
