@@ -17,6 +17,7 @@ import { getUser } from "@/lib/supabase/getUser"
 import { isSupabaseConfigured } from "@/lib/supabase/env"
 import OpportunityCard from "@/components/OpportunityCard"
 import RecommendedSection from "@/components/RecommendedSection"
+import HeroVideoBackground from "@/components/HeroVideoBackground"
 import type { OpportunityRow, UserPreferencesRow } from "@/lib/supabase/types"
 import { MOCK_OPPORTUNITIES } from "@/lib/mockData"
 
@@ -146,8 +147,11 @@ export default async function HomePage() {
   return (
     <div className="min-h-screen bg-paper text-ink">
       {/* ─────────────────── HERO ──────────────────────── */}
-      <section className="relative border-b border-hairline py-16 md:py-24 animate-editorial-fade">
-        <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
+      <section className="relative border-b border-hairline py-16 md:py-24 animate-editorial-fade overflow-hidden">
+        {/* Living technical background video */}
+        <HeroVideoBackground />
+
+        <div className="relative z-10 mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
           <div className="max-w-3xl">
             {/* Left-aligned Fraunces headline */}
             <h1 className="font-serif text-4xl sm:text-5xl lg:text-6xl font-normal leading-[1.1] tracking-tight text-ink">
@@ -191,7 +195,7 @@ export default async function HomePage() {
 
         {/* Live Dispatch Ticker — Deliberate single hero visual moment */}
         {latestItem && (
-          <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8 mt-12">
+          <div className="relative z-10 mx-auto max-w-7xl px-4 sm:px-6 lg:px-8 mt-12">
             <div className="border border-hairline bg-paper-muted/50 px-4 py-3 flex flex-col sm:flex-row sm:items-center justify-between gap-3 text-xs">
               <div className="flex items-center gap-3 min-w-0">
                 <span className="flex h-2 w-2 rounded-full bg-forest flex-shrink-0" />

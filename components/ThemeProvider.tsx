@@ -69,13 +69,21 @@ export function ThemeProvider({ children }: { children: React.ReactNode }) {
 
   const setTheme = (newTheme: Theme) => {
     setThemeState(newTheme)
-    localStorage.setItem(THEME_STORAGE_KEY, newTheme)
+    try {
+      localStorage.setItem(THEME_STORAGE_KEY, newTheme)
+    } catch (e) {}
     applyTheme(newTheme)
   }
 
   const toggleTheme = () => {
-    const nextTheme = theme === "dark" ? "light" : "dark"
-    setTheme(nextTheme)
+    setThemeState((prev) => {
+      const next = prev === "dark" ? "light" : "dark"
+      try {
+        localStorage.setItem(THEME_STORAGE_KEY, next)
+      } catch (e) {}
+      applyTheme(next)
+      return next
+    })
   }
 
   return (

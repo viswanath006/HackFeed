@@ -19,28 +19,19 @@ export default function ThemeToggle({ className = "", showLabel = false }: Theme
   const { theme, toggleTheme } = useTheme()
   const [mounted, setMounted] = useState(false)
 
-  // Prevent hydration mismatch
+  // Once mounted, we know the exact client theme
   useEffect(() => {
     setMounted(true)
   }, [])
 
-  if (!mounted) {
-    // Render placeholder with identical dimensions to prevent layout shift
-    return (
-      <div
-        className={`h-8 w-8 border border-hairline bg-paper-muted ${className}`}
-        aria-hidden="true"
-      />
-    )
-  }
-
-  const isDark = theme === "dark"
+  const isDark = mounted ? theme === "dark" : false
 
   return (
     <button
       type="button"
       onClick={toggleTheme}
       id="theme-toggle-btn"
+      suppressHydrationWarning
       className={`relative inline-flex h-8 items-center justify-center border border-hairline bg-paper px-2 text-ink transition-colors hover:border-ink hover:bg-paper-muted focus-visible:outline-none ${
         showLabel ? "gap-2 px-3 text-xs font-medium" : "w-8"
       } ${className}`}
