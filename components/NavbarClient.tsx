@@ -3,8 +3,9 @@
 /**
  * components/NavbarClient.tsx
  *
- * Minimalist, high-end navigation bar for HackFeed.
- * Zero-emoji aesthetic with SVG iconography and crisp typography.
+ * Editorial masthead navigation for HackFeed.
+ * Grounded in paper and ink design: Fraunces serif wordmark, hairline borders,
+ * plain-text links with quiet underlines, and crisp active states.
  */
 
 import { useState, useRef, useEffect } from "react"
@@ -24,7 +25,6 @@ interface NavbarClientProps {
   isAdmin: boolean
 }
 
-/** Returns the user's initials (up to 2 chars) for the avatar fallback */
 function getInitials(user: UserProps): string {
   if (user.fullName) {
     const parts = user.fullName.trim().split(" ")
@@ -41,7 +41,6 @@ export default function NavbarClient({ user, isAdmin }: NavbarClientProps) {
   const [signingOut, setSigningOut] = useState(false)
   const dropdownRef = useRef<HTMLDivElement>(null)
 
-  // Close dropdown on outside click
   useEffect(() => {
     const handler = (e: MouseEvent) => {
       if (dropdownRef.current && !dropdownRef.current.contains(e.target as Node)) {
@@ -64,66 +63,70 @@ export default function NavbarClient({ user, isAdmin }: NavbarClientProps) {
   const displayName = user?.fullName ?? user?.email?.split("@")[0] ?? "User"
 
   return (
-    <nav className="sticky top-0 z-50 h-14 border-b border-white/[0.07] bg-[#090a0f]/80 backdrop-blur-xl" role="navigation" aria-label="Main navigation">
-      <div className="mx-auto flex h-full max-w-7xl items-center justify-between gap-4 px-4 sm:px-6 lg:px-8">
-        {/* Brand */}
-        <Link href="/" className="flex items-center gap-2.5 text-decoration-none group" id="nav-logo">
-          <div className="flex h-7 w-7 items-center justify-center rounded-lg bg-indigo-600 text-white shadow-sm shadow-indigo-500/20 transition-transform group-hover:scale-105" aria-hidden="true">
-            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.4" strokeLinecap="round" strokeLinejoin="round">
-              <polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2" />
-            </svg>
-          </div>
-          <span className="font-display text-[15px] font-bold tracking-tight text-white">
-            Hack<span className="text-indigo-400">Feed</span>
-          </span>
-        </Link>
+    <nav
+      className="sticky top-0 z-50 h-16 border-b border-hairline bg-paper/95 backdrop-blur-md"
+      role="navigation"
+      aria-label="Main navigation"
+    >
+      <div className="mx-auto flex h-full max-w-7xl items-center justify-between gap-6 px-4 sm:px-6 lg:px-8">
+        {/* Brand Masthead */}
+        <div className="flex items-center gap-6">
+          <Link href="/" className="flex items-baseline gap-2.5 text-decoration-none group" id="nav-logo">
+            <span className="font-serif text-2xl font-normal tracking-tight text-ink">
+              HackFeed
+            </span>
+            <span className="hidden sm:inline-block text-[11px] font-sans uppercase tracking-widest text-ink-muted/80 pl-2.5 border-l border-hairline">
+              Bulletin
+            </span>
+          </Link>
 
-        {/* Center nav links */}
-        <div className="hidden md:flex items-center gap-1">
-          <Link
-            href="/opportunities"
-            className="rounded-md px-3 py-1.5 text-xs font-medium text-slate-400 transition hover:bg-white/[0.04] hover:text-slate-100"
-          >
-            Explore Feed
-          </Link>
-          <Link
-            href="/opportunities?type=hackathon"
-            className="rounded-md px-3 py-1.5 text-xs font-medium text-slate-400 transition hover:bg-white/[0.04] hover:text-indigo-300"
-          >
-            Hackathons
-          </Link>
-          <Link
-            href="/opportunities?type=internship"
-            className="rounded-md px-3 py-1.5 text-xs font-medium text-slate-400 transition hover:bg-white/[0.04] hover:text-sky-300"
-          >
-            Internships
-          </Link>
+          {/* Editorial Nav Links */}
+          <div className="hidden md:flex items-center gap-6 text-xs font-medium text-ink-muted">
+            <Link
+              href="/opportunities"
+              className="transition hover:text-ink hover:underline decoration-ink/40 decoration-1 underline-offset-4"
+            >
+              All Listings
+            </Link>
+            <Link
+              href="/opportunities?type=hackathon"
+              className="transition hover:text-ink hover:underline decoration-ink/40 decoration-1 underline-offset-4"
+            >
+              Hackathons
+            </Link>
+            <Link
+              href="/opportunities?type=internship"
+              className="transition hover:text-forest hover:underline decoration-forest/40 decoration-1 underline-offset-4"
+            >
+              Internships
+            </Link>
+          </div>
         </div>
 
         {/* Right actions */}
-        <div className="flex items-center gap-2">
+        <div className="flex items-center gap-3">
           {!user ? (
             <>
               <Link
                 href="/login"
-                className="rounded-md border border-white/10 px-3 py-1.5 text-xs font-medium text-slate-300 transition hover:border-white/20 hover:bg-white/[0.05] hover:text-white"
+                className="border border-hairline bg-paper px-3.5 py-1.5 text-xs font-medium text-ink transition hover:border-ink hover:bg-paper-muted"
                 id="nav-signin-btn"
               >
                 Sign In
               </Link>
               <Link
                 href="/signup"
-                className="rounded-md bg-indigo-600 px-3.5 py-1.5 text-xs font-semibold text-white shadow-sm shadow-indigo-600/20 transition hover:bg-indigo-500 active:scale-95"
+                className="border border-ink bg-ink px-4 py-1.5 text-xs font-medium text-paper transition hover:bg-ink/90 active:scale-95"
                 id="nav-signup-btn"
               >
-                Get Started
+                Join Bulletin
               </Link>
             </>
           ) : (
             <div className="relative" ref={dropdownRef}>
               <button
                 id="nav-avatar-btn"
-                className="flex h-7 w-7 items-center justify-center overflow-hidden rounded-full border border-white/15 bg-indigo-600 text-xs font-bold text-white shadow-sm transition hover:border-indigo-400 focus:outline-none"
+                className="flex h-8 w-8 items-center justify-center overflow-hidden border border-hairline bg-paper-muted text-xs font-serif font-bold text-ink transition hover:border-ink focus:outline-none"
                 aria-label="Open user menu"
                 aria-expanded={dropdownOpen}
                 aria-haspopup="menu"
@@ -139,26 +142,26 @@ export default function NavbarClient({ user, isAdmin }: NavbarClientProps) {
 
               {dropdownOpen && (
                 <div
-                  className="absolute right-0 top-full mt-2 w-56 overflow-hidden rounded-xl border border-white/10 bg-[#12141c] p-1.5 shadow-2xl backdrop-blur-2xl"
+                  className="absolute right-0 top-full mt-2 w-56 border border-hairline bg-paper p-1.5 shadow-lg backdrop-blur-md"
                   role="menu"
                   aria-label="User menu"
                 >
-                  <div className="border-b border-white/[0.06] px-3.5 py-2.5">
-                    <div className="truncate text-xs font-semibold text-zinc-100">{displayName}</div>
+                  <div className="border-b border-hairline px-3.5 py-2.5">
+                    <div className="truncate text-xs font-semibold text-ink">{displayName}</div>
                     {user.email && (
-                      <div className="truncate text-[11px] text-zinc-500">{user.email}</div>
+                      <div className="truncate text-[11px] text-ink-muted">{user.email}</div>
                     )}
                   </div>
 
                   <div className="py-1 space-y-0.5">
                     <Link
                       href="/bookmarks"
-                      className="flex items-center gap-2.5 rounded-lg px-3 py-2 text-xs font-medium text-slate-300 transition hover:bg-white/[0.06] hover:text-white"
+                      className="flex items-center gap-2.5 px-3 py-2 text-xs font-medium text-ink transition hover:bg-paper-muted"
                       id="nav-bookmarks-link"
                       role="menuitem"
                       onClick={() => setDropdownOpen(false)}
                     >
-                      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="text-slate-400">
+                      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" className="text-ink-muted">
                         <path d="M19 21l-7-5-7 5V5a2 2 0 0 1 2-2h10a2 2 0 0 1 2 2z" />
                       </svg>
                       Saved Bookmarks
@@ -166,14 +169,14 @@ export default function NavbarClient({ user, isAdmin }: NavbarClientProps) {
 
                     <Link
                       href="/settings"
-                      className="flex items-center gap-2.5 rounded-lg px-3 py-2 text-xs font-medium text-slate-300 transition hover:bg-white/[0.06] hover:text-white"
+                      className="flex items-center gap-2.5 px-3 py-2 text-xs font-medium text-ink transition hover:bg-paper-muted"
                       id="nav-settings-link"
                       role="menuitem"
                       onClick={() => setDropdownOpen(false)}
                     >
-                      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="text-slate-400">
-                        <path d="M12.22 2h-.44a2 2 0 0 0-2 2v.18a2 2 0 0 1-1 1.73l-.43.25a2 2 0 0 1-2 0l-.15-.08a2 2 0 0 0-2.73.73l-.22.38a2 2 0 0 0 .73 2.73l.15.1a2 2 0 0 1 1 1.72v.51a2 2 0 0 1-1 1.74l-.15.09a2 2 0 0 0-.73 2.73l.22.38a2 2 0 0 0 2.73.73l.15-.08a2 2 0 0 1 2 0l.43.25a2 2 0 0 1 1 1.73V20a2 2 0 0 0 2 2h.44a2 2 0 0 0 2-2v-.18a2 2 0 0 1 1-1.73l.43-.25a2 2 0 0 1 2 0l.15.08a2 2 0 0 0 2.73-.73l.22-.39a2 2 0 0 0-.73-2.73l-.15-.08a2 2 0 0 1-1-1.74v-.5a2 2 0 0 1 1-1.74l.15-.09a2 2 0 0 0 .73-2.73l-.22-.38a2 2 0 0 0-2.73-.73l-.15.08a2 2 0 0 1-2 0l-.43-.25a2 2 0 0 1-1-1.73V4a2 2 0 0 0-2-2z" />
+                      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" className="text-ink-muted">
                         <circle cx="12" cy="12" r="3" />
+                        <path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2-2h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z" />
                       </svg>
                       Preferences &amp; Alerts
                     </Link>
@@ -181,12 +184,12 @@ export default function NavbarClient({ user, isAdmin }: NavbarClientProps) {
                     {isAdmin && (
                       <Link
                         href="/admin"
-                        className="flex items-center gap-2.5 rounded-lg px-3 py-2 text-xs font-medium text-amber-300 transition hover:bg-amber-500/10"
+                        className="flex items-center gap-2.5 px-3 py-2 text-xs font-medium text-amber-700 transition hover:bg-paper-muted"
                         id="nav-admin-link"
                         role="menuitem"
                         onClick={() => setDropdownOpen(false)}
                       >
-                        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="text-amber-400">
+                        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round">
                           <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z" />
                         </svg>
                         Admin Console
@@ -194,15 +197,15 @@ export default function NavbarClient({ user, isAdmin }: NavbarClientProps) {
                     )}
                   </div>
 
-                  <div className="border-t border-white/[0.06] pt-1">
+                  <div className="border-t border-hairline pt-1">
                     <button
-                      className="flex w-full items-center gap-2.5 rounded-lg px-3 py-2 text-left text-xs font-medium text-rose-400 transition hover:bg-rose-500/10"
+                      className="flex w-full items-center gap-2.5 px-3 py-2 text-left text-xs font-medium text-signal transition hover:bg-paper-muted"
                       id="nav-signout-btn"
                       role="menuitem"
                       onClick={handleSignOut}
                       disabled={signingOut}
                     >
-                      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="text-rose-400">
+                      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round">
                         <path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4" />
                         <polyline points="16 17 21 12 16 7" />
                         <line x1="21" y1="12" x2="9" y2="12" />

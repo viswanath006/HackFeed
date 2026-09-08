@@ -1,14 +1,13 @@
 /**
  * app/page.tsx — HackFeed Homepage
  *
- * Server Component:
- *  - Hero explaining "All hackathons & internships. One feed."
- *  - Live stats row (hackathons, internships, platforms)
- *  - Platform badges strip (Unstop, Devfolio, HackerEarth, H2Skill)
- *  - Personalized "Recommended for You" section / Preference CTA
- *  - Featured strip (horizontal scroll of is_featured cards)
- *  - Recent feed grid (mixed hackathons + internships, soonest-deadline/recent first)
- *  - "Explore all opportunities" CTA
+ * Editorial live bulletin board for student builders.
+ * Grounded in Paper & Ink design:
+ * - Fraunces serif headlines & typography
+ * - Left-aligned hero with running text platform sources
+ * - Live dispatch ticker as the single deliberate visual motif
+ * - Bulletin listings with hairline dividers (no generic shadow cards)
+ * - Zero arrow suffixes, zero all-caps eyebrow badges
  */
 
 import type { Metadata } from "next"
@@ -24,50 +23,9 @@ import { MOCK_OPPORTUNITIES } from "@/lib/mockData"
 export const dynamic = "force-dynamic"
 
 export const metadata: Metadata = {
-  title: "HackFeed — All hackathons & internships. One feed.",
-  description: "Discover curated hackathons and internships aggregated from Unstop, Devfolio, HackerEarth, and H2Skill in real time.",
+  title: "HackFeed — The live bulletin board for student builders.",
+  description: "Engineering challenges, prize hackathons, and high-growth internships aggregated continuously from Unstop, Devfolio, HackerEarth, and H2Skill.",
 }
-
-// ── Stat Pill ──────────────────────────────────────────────────────────────
-
-function StatPill({ value, label }: { value: number | string; label: string }) {
-  return (
-    <div className="flex items-center gap-2.5">
-      <span className="text-xl font-bold text-white tracking-tight">{value}</span>
-      <span className="text-[11px] font-medium text-slate-400 uppercase tracking-wider">{label}</span>
-    </div>
-  )
-}
-
-// ── Section Heading ────────────────────────────────────────────────────────
-
-function SectionHeading({
-  title,
-  href,
-  linkLabel = "View all →",
-}: {
-  title: string
-  href?: string
-  linkLabel?: string
-}) {
-  return (
-    <div className="flex items-center justify-between mb-6">
-      <h2 className="font-display text-lg font-bold tracking-tight text-slate-100 flex items-center gap-2">
-        {title}
-      </h2>
-      {href && (
-        <Link
-          href={href}
-          className="text-xs font-medium text-indigo-400 transition hover:text-indigo-300"
-        >
-          {linkLabel}
-        </Link>
-      )}
-    </div>
-  )
-}
-
-// ── Page ───────────────────────────────────────────────────────────────────
 
 export default async function HomePage() {
   const { user } = await getUser()
@@ -75,7 +33,6 @@ export default async function HomePage() {
 
   let hackathonCount = 0
   let internshipCount = 0
-  let platformCount = 4
   let featuredRows: OpportunityRow[] = []
   let recentRows: OpportunityRow[] = []
   let recommendedRows: OpportunityRow[] = []
@@ -85,7 +42,6 @@ export default async function HomePage() {
   if (isSupabaseConfigured()) {
     try {
       const supabase = await createClient()
-
       const nowIso = new Date().toISOString()
 
       const [
@@ -114,7 +70,7 @@ export default async function HomePage() {
           .or(`application_deadline.gte.${nowIso},application_deadline.is.null`)
           .order("application_deadline", { ascending: true, nullsFirst: false })
           .order("created_at", { ascending: false })
-          .limit(8),
+          .limit(6),
         supabase
           .from("opportunities")
           .select("*")
@@ -122,7 +78,7 @@ export default async function HomePage() {
           .or(`application_deadline.gte.${nowIso},application_deadline.is.null`)
           .order("application_deadline", { ascending: true, nullsFirst: false })
           .order("created_at", { ascending: false })
-          .limit(12),
+          .limit(10),
         userId
           ? supabase.from("bookmarks").select("opportunity_id").eq("user_id", userId)
           : Promise.resolve({ data: [] }),
@@ -154,7 +110,7 @@ export default async function HomePage() {
     }
   }
 
-  // Fallback to rich seed dataset if database is unpopulated or disconnected
+  // Fallback to seed dataset if database is unpopulated
   if (featuredRows.length === 0) {
     featuredRows = MOCK_OPPORTUNITIES.filter((op) => op.is_featured)
   }
@@ -168,113 +124,95 @@ export default async function HomePage() {
     internshipCount = MOCK_OPPORTUNITIES.filter((op) => op.type === "internship").length
   }
 
-  // Calculate personalized recommendations
+  // Personalized recommendations
   if (preferences && (preferences.preferred_tags?.length || preferences.preferred_type !== "both")) {
     const pTags = preferences.preferred_tags ?? []
     const pType = preferences.preferred_type
 
     const pool = recentRows.length > 0 ? recentRows : MOCK_OPPORTUNITIES
     recommendedRows = pool.filter((op) => {
-      // Type match
       if (pType !== "both" && op.type !== pType) return false
-      // Tag match
       if (pTags.length > 0) {
         const opTags = op.tags ?? []
         return pTags.some((pt) => opTags.some((ot) => ot.toLowerCase().includes(pt.toLowerCase())))
       }
       return true
-    }).slice(0, 8)
+    }).slice(0, 6)
   }
 
   const bookmarkedIds = new Set(bookmarkRows.map((b) => b.opportunity_id))
+  const latestItem = recentRows[0] ?? null
 
   return (
-    <div className="min-h-screen">
+    <div className="min-h-screen bg-paper text-ink">
       {/* ─────────────────── HERO ──────────────────────── */}
-      <section className="relative overflow-hidden pt-16 pb-20 md:pt-24 md:pb-28 bg-grid-pattern">
-        {/* Subtle radial ambient highlight */}
-        <div className="pointer-events-none absolute inset-0 overflow-hidden" aria-hidden="true">
-          <div className="absolute top-0 left-1/2 -translate-x-1/2 h-[380px] w-[700px] rounded-full bg-indigo-600/[0.08] blur-[120px]" />
-          <div className="absolute inset-0 bg-gradient-to-b from-transparent via-[#090a0f]/80 to-[#090a0f]" />
-        </div>
+      <section className="relative border-b border-hairline py-16 md:py-24 animate-editorial-fade">
+        <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
+          <div className="max-w-3xl">
+            {/* Left-aligned Fraunces headline */}
+            <h1 className="font-serif text-4xl sm:text-5xl lg:text-6xl font-normal leading-[1.1] tracking-tight text-ink">
+              The live bulletin board for student builders.
+            </h1>
 
-        <div className="relative mx-auto max-w-5xl px-4 text-center sm:px-6 lg:px-8">
-          {/* Eyebrow badge */}
-          <div className="mb-6 inline-flex items-center gap-2 rounded-full border border-indigo-500/25 bg-indigo-500/10 px-3.5 py-1 text-xs font-medium text-indigo-300 backdrop-blur-md">
-            <span className="relative flex h-2 w-2">
-              <span className="absolute inline-flex h-full w-full animate-ping rounded-full bg-emerald-400 opacity-75" />
-              <span className="relative inline-flex h-2 w-2 rounded-full bg-emerald-400" />
-            </span>
-            <span>Real-time Opportunity Intelligence</span>
-          </div>
+            {/* Supporting line */}
+            <p className="mt-5 text-base sm:text-lg text-ink-muted leading-relaxed max-w-2xl">
+              Engineering challenges, prize hackathons, and high-growth tech internships. One calm, verified feed without the noise.
+            </p>
 
-          {/* Heading */}
-          <h1 className="font-display text-3xl font-extrabold leading-[1.15] tracking-tight text-white sm:text-5xl md:text-6xl">
-            Engineering challenges &amp; tech roles.
-            <br />
-            <span className="gradient-brand">
-              Curated in one verified feed.
-            </span>
-          </h1>
+            {/* Platform sources as plain running text */}
+            <p className="mt-4 text-xs sm:text-sm text-ink-muted/80">
+              Aggregating continuously from <span className="text-ink font-medium">Unstop</span>, <span className="text-ink font-medium">Devfolio</span>, <span className="text-ink font-medium">HackerEarth</span>, and <span className="text-ink font-medium">H2Skill</span>.
+            </p>
 
-          {/* Subtitle */}
-          <p className="mx-auto mt-5 max-w-2xl text-sm sm:text-base leading-relaxed text-slate-400">
-            Never miss an application window. Discover verified prize hackathons, open source sprints, and high-growth internships aggregated continuously from{" "}
-            <span className="font-medium text-slate-200">Unstop</span>,{" "}
-            <span className="font-medium text-slate-200">Devfolio</span>,{" "}
-            <span className="font-medium text-slate-200">HackerEarth</span>, and{" "}
-            <span className="font-medium text-slate-200">H2Skill</span>.
-          </p>
-
-          {/* CTAs */}
-          <div className="mt-8 flex flex-wrap items-center justify-center gap-3">
-            <Link
-              href="/opportunities"
-              id="hero-browse-btn"
-              className="group inline-flex items-center gap-2 rounded-lg bg-indigo-600 px-5 py-2.5 text-xs font-semibold text-white shadow-md shadow-indigo-600/25 transition hover:bg-indigo-500 active:scale-95"
-            >
-              <span>Explore Opportunities</span>
-              <span className="transition-transform group-hover:translate-x-0.5" aria-hidden="true">→</span>
-            </Link>
-            <Link
-              href="/opportunities?type=hackathon"
-              className="inline-flex items-center gap-1.5 rounded-lg border border-white/10 bg-white/[0.04] px-4 py-2.5 text-xs font-medium text-slate-200 transition hover:bg-white/[0.08] hover:border-white/20"
-            >
-              Hackathons Only
-            </Link>
-          </div>
-
-          {/* Platform Pills Strip */}
-          <div className="mt-10 flex flex-wrap items-center justify-center gap-2">
-            <span className="text-xs text-slate-500 font-medium mr-1.5">Sources:</span>
-            <span className="rounded-md border border-amber-500/20 bg-amber-500/10 px-2.5 py-0.5 text-xs font-medium text-amber-300">
-              Unstop
-            </span>
-            <span className="rounded-md border border-blue-500/20 bg-blue-500/10 px-2.5 py-0.5 text-xs font-medium text-blue-300">
-              Devfolio
-            </span>
-            <span className="rounded-md border border-emerald-500/20 bg-emerald-500/10 px-2.5 py-0.5 text-xs font-medium text-emerald-300">
-              HackerEarth
-            </span>
-            <span className="rounded-md border border-indigo-500/20 bg-indigo-500/10 px-2.5 py-0.5 text-xs font-medium text-indigo-300">
-              H2Skill
-            </span>
-          </div>
-
-          {/* Stats Bar */}
-          <div className="mt-10 inline-flex flex-wrap items-center justify-center gap-8 rounded-xl border border-white/[0.08] bg-[#12141c]/90 px-7 py-3.5 backdrop-blur-xl shadow-lg">
-            <StatPill value={hackathonCount} label="hackathons" />
-            <div className="h-4 w-px bg-white/10 hidden sm:block" />
-            <StatPill value={internshipCount} label="internships" />
-            <div className="h-4 w-px bg-white/10 hidden sm:block" />
-            <StatPill value={platformCount} label="platforms" />
-            <div className="h-4 w-px bg-white/10 hidden sm:block" />
-            <div className="flex items-center gap-2">
-              <span className="h-2 w-2 rounded-full bg-emerald-400" aria-hidden="true" />
-              <span className="text-[11px] font-semibold text-emerald-400 uppercase tracking-wider">Live Sync</span>
+            {/* Plain active-voice CTAs */}
+            <div className="mt-8 flex flex-wrap items-center gap-3">
+              <Link
+                href="/opportunities"
+                id="hero-browse-btn"
+                className="border border-ink bg-ink px-5 py-2.5 text-xs font-medium text-paper transition hover:bg-ink/90 active:scale-95"
+              >
+                Explore All Listings
+              </Link>
+              <Link
+                href="/opportunities?type=hackathon"
+                className="border border-hairline bg-paper px-4 py-2.5 text-xs font-medium text-ink transition hover:border-ink hover:bg-paper-muted"
+              >
+                Hackathons ({hackathonCount})
+              </Link>
+              <Link
+                href="/opportunities?type=internship"
+                className="border border-hairline bg-paper px-4 py-2.5 text-xs font-medium text-forest transition hover:border-forest hover:bg-paper-muted"
+              >
+                Internships ({internshipCount})
+              </Link>
             </div>
           </div>
         </div>
+
+        {/* Live Dispatch Ticker — Deliberate single hero visual moment */}
+        {latestItem && (
+          <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8 mt-12">
+            <div className="border border-hairline bg-paper-muted/50 px-4 py-3 flex flex-col sm:flex-row sm:items-center justify-between gap-3 text-xs">
+              <div className="flex items-center gap-3 min-w-0">
+                <span className="flex h-2 w-2 rounded-full bg-forest flex-shrink-0" />
+                <span className="font-serif italic text-ink-muted flex-shrink-0">Latest dispatch</span>
+                <span className="text-hairline hidden sm:inline">|</span>
+                <span className="font-medium text-ink truncate">{latestItem.title}</span>
+                {latestItem.source_platform && (
+                  <span className="text-ink-muted/80 hidden md:inline text-[11px]">
+                    via {latestItem.source_platform}
+                  </span>
+                )}
+              </div>
+              <Link
+                href={`/opportunities/${latestItem.id}`}
+                className="font-medium text-ink hover:underline decoration-ink/40 underline-offset-4 flex-shrink-0"
+              >
+                View dispatch
+              </Link>
+            </div>
+          </div>
+        )}
       </section>
 
       {/* ─────────────── PERSONALIZED RECOMMENDATIONS ───── */}
@@ -285,37 +223,59 @@ export default async function HomePage() {
         bookmarkedIds={bookmarkedIds}
       />
 
-      {/* ─────────────── FEATURED STRIP ────────────────── */}
+      {/* ─────────────── FEATURED LISTINGS ─────────────── */}
       {featuredRows.length > 0 && (
-        <section className="py-8 border-t border-white/[0.06]">
+        <section className="py-12 border-t border-hairline">
           <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
-            <SectionHeading title="Featured Opportunities" href="/opportunities?featured=true" />
-            <div className="hide-scrollbar flex gap-5 overflow-x-auto pb-4 -mx-4 px-4">
-              {featuredRows.map((op) => (
-                <div key={op.id} className="w-72 flex-shrink-0 sm:w-80">
-                  <OpportunityCard
-                    opportunity={op}
-                    userId={userId}
-                    isBookmarked={bookmarkedIds.has(op.id)}
-                    showTags
-                  />
-                </div>
+            <div className="flex items-baseline justify-between mb-6">
+              <div>
+                <p className="text-xs font-serif italic text-ink-muted">Highlighted opportunities</p>
+                <h2 className="font-serif text-2xl sm:text-3xl font-normal tracking-tight text-ink mt-1">
+                  Featured Listings
+                </h2>
+              </div>
+              <Link
+                href="/opportunities?featured=true"
+                className="text-xs font-medium text-ink-muted hover:text-ink hover:underline decoration-ink/40 underline-offset-4 transition"
+              >
+                View all featured
+              </Link>
+            </div>
+
+            <div className="border-t border-hairline divide-y divide-hairline">
+              {featuredRows.slice(0, 5).map((op) => (
+                <OpportunityCard
+                  key={op.id}
+                  opportunity={op}
+                  userId={userId}
+                  isBookmarked={bookmarkedIds.has(op.id)}
+                  showTags
+                />
               ))}
             </div>
           </div>
         </section>
       )}
 
-      {/* ─────────────── RECENT FEED ───────────────────── */}
-      <section className="py-12 pb-24 border-t border-white/[0.06]">
+      {/* ─────────────── CURRENT BULLETIN FEED ─────────── */}
+      <section className="py-12 pb-24 border-t border-hairline">
         <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
-          <SectionHeading
-            title="Upcoming &amp; Active Feed"
-            href="/opportunities"
-            linkLabel="View complete feed →"
-          />
+          <div className="flex items-baseline justify-between mb-6">
+            <div>
+              <p className="text-xs font-serif italic text-ink-muted">Continuous aggregation</p>
+              <h2 className="font-serif text-2xl sm:text-3xl font-normal tracking-tight text-ink mt-1">
+                Current Bulletin
+              </h2>
+            </div>
+            <Link
+              href="/opportunities"
+              className="text-xs font-medium text-ink-muted hover:text-ink hover:underline decoration-ink/40 underline-offset-4 transition"
+            >
+              Browse complete feed
+            </Link>
+          </div>
 
-          <div className="grid grid-cols-1 gap-5 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
+          <div className="border-t border-hairline divide-y divide-hairline">
             {recentRows.map((op) => (
               <OpportunityCard
                 key={op.id}
@@ -327,12 +287,12 @@ export default async function HomePage() {
             ))}
           </div>
 
-          <div className="mt-12 text-center">
+          <div className="mt-10 text-center">
             <Link
               href="/opportunities"
-              className="inline-flex items-center gap-2 rounded-lg border border-white/10 bg-white/[0.03] px-6 py-3 text-xs font-semibold text-slate-200 transition hover:border-white/20 hover:bg-white/[0.07] active:scale-95"
+              className="inline-block border border-hairline bg-paper px-6 py-3 text-xs font-medium text-ink transition hover:border-ink hover:bg-paper-muted"
             >
-              Explore all hackathons &amp; internships →
+              View all active listings
             </Link>
           </div>
         </div>

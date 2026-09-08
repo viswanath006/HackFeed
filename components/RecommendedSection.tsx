@@ -3,7 +3,8 @@
  *
  * Personalized recommendations section for the homepage.
  * - Shows curated picks based on user_preferences (preferred_tags + preferred_type)
- * - If no preferences set, shows a clean, modern prompt linking to /settings
+ * - If no preferences set, shows a calm editorial prompt linking to /settings
+ * - Strictly eliminates pill badges and arrow suffixes
  */
 
 import Link from "next/link"
@@ -31,26 +32,24 @@ export default function RecommendedSection({
   // Case 1: Logged in user with preferences set & matching recommendations
   if (userId && hasPreferences && recommendedOpportunities.length > 0) {
     return (
-      <section className="py-8 border-t border-white/[0.06] bg-gradient-to-b from-indigo-950/10 via-transparent to-transparent">
+      <section className="py-10 border-t border-hairline bg-paper">
         <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
-          <div className="flex flex-wrap items-center justify-between gap-4 mb-6">
+          <div className="flex flex-wrap items-baseline justify-between gap-4 mb-6">
             <div>
-              <div className="inline-flex items-center gap-1.5 rounded-full bg-indigo-500/10 border border-indigo-500/25 px-2.5 py-0.5 text-xs font-semibold text-indigo-300 mb-2">
-                Curated For You
-              </div>
-              <h2 className="font-display text-lg font-bold tracking-tight text-slate-100 flex items-center gap-2">
-                Recommended Opportunities
+              <p className="text-xs font-serif italic text-ink-muted">Curated for your profile</p>
+              <h2 className="font-serif text-2xl sm:text-3xl font-normal tracking-tight text-ink mt-1">
+                Recommended for You
               </h2>
             </div>
             <Link
               href="/settings"
-              className="text-xs font-medium text-indigo-400 hover:text-indigo-300 transition flex items-center gap-1"
+              className="text-xs font-medium text-ink-muted hover:text-ink hover:underline decoration-ink/40 underline-offset-4 transition"
             >
-              <span>Edit preferences →</span>
+              Edit preferences
             </Link>
           </div>
 
-          <div className="grid grid-cols-1 gap-5 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
+          <div className="border-t border-hairline divide-y divide-hairline">
             {recommendedOpportunities.map((op) => (
               <OpportunityCard
                 key={op.id}
@@ -66,29 +65,27 @@ export default function RecommendedSection({
     )
   }
 
-  // Case 2: Logged in user without preferences OR guest user -> show modern clean prompt
+  // Case 2: Logged in user without preferences OR guest user -> calm editorial prompt
   return (
-    <section className="py-6 border-t border-white/[0.06]">
+    <section className="py-8 border-t border-hairline bg-paper">
       <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
-        <div className="relative overflow-hidden rounded-xl border border-white/[0.08] bg-gradient-to-r from-[#12141c] via-[#161824] to-[#12141c] p-6 sm:p-7 shadow-lg">
-          <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-5">
+        <div className="border border-hairline bg-paper p-6 sm:p-8">
+          <div className="flex flex-col sm:flex-row items-start sm:items-baseline justify-between gap-6">
             <div className="max-w-xl">
-              <span className="inline-flex items-center gap-1.5 rounded-full bg-indigo-500/15 border border-indigo-500/25 px-2.5 py-0.5 text-[11px] font-semibold text-indigo-300 mb-2">
-                Personalized Discovery
-              </span>
-              <h3 className="text-base font-bold text-white tracking-tight sm:text-lg">
-                Get tailored hackathon and internship recommendations
+              <p className="text-xs font-serif italic text-ink-muted">Personalized bulletin</p>
+              <h3 className="font-serif text-xl sm:text-2xl font-normal text-ink tracking-tight mt-1">
+                Filter by your specific domains and skills
               </h3>
-              <p className="text-xs text-slate-400 mt-1 leading-relaxed">
-                Choose your tech domains (AI/ML, Web3, Full Stack, Cloud) to receive personalized feeds and deadline updates.
+              <p className="text-xs sm:text-sm text-ink-muted mt-2 leading-relaxed">
+                Select your tech interests (such as AI, Web3, Systems, or Full Stack) to receive personalized feeds and deadline alerts.
               </p>
             </div>
 
             <Link
               href={userId ? "/settings" : "/login?redirectTo=/settings"}
-              className="flex-shrink-0 inline-flex items-center gap-1.5 rounded-lg bg-indigo-600 px-5 py-2.5 text-xs font-semibold text-white shadow-sm shadow-indigo-600/25 transition hover:bg-indigo-500 active:scale-95"
+              className="flex-shrink-0 border border-ink bg-ink px-4 py-2 text-xs font-medium text-paper transition hover:bg-ink/90 active:scale-95"
             >
-              <span>Configure Interests →</span>
+              Configure Interests
             </Link>
           </div>
         </div>

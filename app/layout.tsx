@@ -6,15 +6,14 @@
  */
 
 import type { Metadata } from "next"
-import { Plus_Jakarta_Sans, Inter, JetBrains_Mono } from "next/font/google"
+import { Fraunces, Inter } from "next/font/google"
 import "./globals.css"
 import Navbar from "@/components/Navbar"
 import { ToastProvider } from "@/components/Toast"
 
-const displayFont = Plus_Jakarta_Sans({
+const serifFont = Fraunces({
   subsets: ["latin"],
-  variable: "--font-display",
-  weight: ["500", "600", "700", "800"],
+  variable: "--font-serif",
   display: "swap",
 })
 
@@ -25,21 +24,14 @@ const sansFont = Inter({
   display: "swap",
 })
 
-const monoFont = JetBrains_Mono({
-  subsets: ["latin"],
-  variable: "--font-mono",
-  weight: ["400", "500", "600", "700"],
-  display: "swap",
-})
-
 export const metadata: Metadata = {
   title: {
-    default: "HackFeed — The Developer Opportunity Aggregator",
+    default: "HackFeed — The Student Builder Opportunity Bulletin",
     template: "%s | HackFeed",
   },
   description:
-    "Aggregated real-time feed of hackathons, engineering challenges, and tech internships across Unstop, Devfolio, HackerEarth, and H2Skill.",
-  keywords: ["hackathon", "internship", "developer", "engineering", "Unstop", "Devfolio", "HackerEarth"],
+    "Live bulletin board aggregating hackathons, engineering challenges, and tech internships across Unstop, Devfolio, HackerEarth, and H2Skill.",
+  keywords: ["hackathon", "internship", "developer", "student builder", "Unstop", "Devfolio", "HackerEarth"],
   openGraph: {
     siteName: "HackFeed",
     type: "website",
@@ -48,8 +40,8 @@ export const metadata: Metadata = {
 
 export default function RootLayout({ children }: { children: React.ReactNode }) {
   return (
-    <html lang="en" className={`${displayFont.variable} ${sansFont.variable} ${monoFont.variable} font-sans`}>
-      <body className="min-h-screen bg-[#090a0f] font-sans text-slate-100 antialiased selection:bg-indigo-500/30 selection:text-white">
+    <html lang="en" className={`${serifFont.variable} ${sansFont.variable} font-sans`}>
+      <body className="min-h-screen bg-paper text-ink font-sans antialiased selection:bg-signal/20 selection:text-ink">
         <ToastProvider>
           <Navbar />
           {children}

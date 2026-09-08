@@ -166,29 +166,24 @@ export default async function OpportunitiesPage({
   }
 
   return (
-    <div className="min-h-screen pb-20">
+    <div className="min-h-screen bg-paper pb-20">
       {/* Header Banner */}
-      <div className="border-b border-white/[0.06] bg-[#090a0f]/80 backdrop-blur-xl">
-        <div className="mx-auto max-w-7xl px-4 py-8 sm:px-6 lg:px-8">
-          <div className="flex flex-wrap items-center justify-between gap-4">
+      <div className="border-b border-hairline bg-paper">
+        <div className="mx-auto max-w-7xl px-4 py-10 sm:px-6 lg:px-8">
+          <div className="flex flex-wrap items-baseline justify-between gap-4">
             <div>
-              <h1 className="font-display text-2xl font-bold tracking-tight text-slate-100 sm:text-3xl">
+              <h1 className="font-serif text-3xl font-normal tracking-tight text-ink sm:text-4xl">
                 Browse Opportunities
               </h1>
-              <p className="mt-1.5 text-xs sm:text-sm text-slate-400">
-                Verified hackathons, innovation challenges, and tech internships across Unstop, Devfolio, HackerEarth &amp; H2Skill.
+              <p className="mt-2 max-w-2xl text-xs sm:text-sm text-ink-muted leading-relaxed">
+                Verified hackathons, sprints, and internships aggregated continuously from Unstop, Devfolio, HackerEarth, and H2Skill.
               </p>
             </div>
 
-            {/* Clean platform indicator */}
-            <div className="flex items-center gap-2 rounded-lg border border-white/[0.08] bg-[#12141c] px-3 py-1.5">
-              <span className="relative flex h-2 w-2">
-                <span className="absolute inline-flex h-full w-full animate-ping rounded-full bg-emerald-400 opacity-75" />
-                <span className="relative inline-flex h-2 w-2 rounded-full bg-emerald-400" />
-              </span>
-              <span className="text-xs font-medium text-slate-300">
-                4 Platforms Synced Live
-              </span>
+            {/* Quiet live indicator */}
+            <div className="flex items-center gap-2 text-xs text-ink-muted">
+              <span className="h-2 w-2 rounded-full bg-forest" />
+              <span>Synced continuously</span>
             </div>
           </div>
         </div>

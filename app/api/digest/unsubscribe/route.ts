@@ -140,7 +140,7 @@ function renderUnsubscribeHtml(title: string, message: string, success: boolean)
     </div>
     <h1>${title}</h1>
     <p>${message}</p>
-    <a href="/settings" class="btn">Manage Preferences on HackFeed →</a>
+    <a href="/settings" class="btn">Manage Preferences on HackFeed</a>
   </div>
 </body>
 </html>`

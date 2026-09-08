@@ -2,11 +2,12 @@
  * app/opportunities/[id]/page.tsx
  *
  * /opportunities/:id — Comprehensive opportunity detail page.
- * - Clean developer aesthetic with SVG iconography & zero emojis
- * - Deep opportunity metadata overview
- * - Direct outbound "Apply Now" link (target="_blank")
- * - Bookmark button & Calendar Export
- * - Related opportunities section
+ * Full-width editorial layout grounded in Paper & Ink:
+ * - Fraunces serif large headline for opportunity title
+ * - Inter body text with max ~75 char line length (max-w-prose)
+ * - Prominent serif numeral countdown block for deadline urgency
+ * - Signal-orange "Apply on [Platform]" CTA with active-voice label (no arrow suffixes)
+ * - Hairline metadata borders
  */
 
 import { notFound } from "next/navigation"
@@ -16,7 +17,6 @@ import Link from "next/link"
 import { createClient } from "@/lib/supabase/server"
 import { getUser } from "@/lib/supabase/getUser"
 import { isSupabaseConfigured } from "@/lib/supabase/env"
-import DeadlineBadge from "@/components/DeadlineBadge"
 import TagChip from "@/components/TagChip"
 import BookmarkButton from "@/components/BookmarkButton"
 import AddToCalendarButton from "@/components/AddToCalendarButton"
@@ -48,7 +48,7 @@ export async function generateMetadata({
 
       data = record as Partial<OpportunityRow> | null
     } catch {
-      // ignore
+      // fallback
     }
   }
 
@@ -56,13 +56,13 @@ export async function generateMetadata({
     data = MOCK_OPPORTUNITIES.find((op) => op.id === id) ?? null
   }
 
-  if (!data || !data.title) return { title: "Opportunity not found — HackFeed" }
+  if (!data || !data.title) return { title: "Listing not found — HackFeed" }
 
   return {
-    title: `${data.title} — HackFeed`,
+    title: `${data.title} — HackFeed Bulletin`,
     description:
       data.description?.slice(0, 155) ??
-      `${data.type === "hackathon" ? "Hackathon" : "Internship"} hosted on ${data.source_platform ?? "HackFeed"}`,
+      `${data.type === "hackathon" ? "Hackathon" : "Internship"} aggregated from ${data.source_platform ?? "HackFeed"}`,
     openGraph: {
       title: data.title,
       description: data.description?.slice(0, 155) ?? "",
@@ -72,55 +72,15 @@ export async function generateMetadata({
   }
 }
 
-// ── Platform Brand Colors ──────────────────────────────────────────────────
-
-const PLATFORM_COLORS: Record<string, string> = {
-  unstop:       "bg-amber-500/10 text-amber-300 border-amber-500/25",
-  devfolio:     "bg-blue-500/10   text-blue-300   border-blue-500/25",
-  hackerearth:  "bg-emerald-500/10 text-emerald-300 border-emerald-500/25",
-  h2skill:      "bg-indigo-500/10 text-indigo-300 border-indigo-500/25",
-  hack2skill:   "bg-indigo-500/10 text-indigo-300 border-indigo-500/25",
+function platformAccent(platform: string | null): string {
+  if (!platform) return "border-ink-muted text-ink-muted"
+  const p = platform.toLowerCase()
+  if (p.includes("unstop")) return "border-amber-700 text-amber-900"
+  if (p.includes("devfolio")) return "border-blue-700 text-blue-900"
+  if (p.includes("hackerearth")) return "border-emerald-700 text-emerald-900"
+  if (p.includes("h2skill") || p.includes("hack2skill")) return "border-indigo-700 text-indigo-900"
+  return "border-ink-muted text-ink-muted"
 }
-
-function platformCls(platform: string | null): string {
-  if (!platform) return "bg-slate-800/80 text-slate-400 border-slate-700/60"
-  return PLATFORM_COLORS[platform.toLowerCase()] ?? "bg-slate-800/80 text-slate-300 border-slate-700/60"
-}
-
-// ── Type & Mode Badges ─────────────────────────────────────────────────────
-
-const TYPE_BADGE: Record<string, string> = {
-  hackathon:  "bg-indigo-500/10 text-indigo-300 border-indigo-500/25",
-  internship: "bg-sky-500/10    text-sky-300    border-sky-500/25",
-}
-const MODE_BADGE: Record<string, string> = {
-  online:  "bg-emerald-500/10 text-emerald-300 border-emerald-500/25",
-  offline: "bg-slate-800/80   text-slate-300   border-slate-700/60",
-  hybrid:  "bg-amber-500/10   text-amber-300   border-amber-500/25",
-}
-const TYPE_GRADIENT: Record<string, string> = {
-  hackathon:  "from-slate-900 via-[#161824] to-[#12141c]",
-  internship: "from-slate-900 via-[#141926] to-[#12141c]",
-}
-
-// ── Metadata Item Row with SVG Icon ────────────────────────────────────────
-
-function MetaRow({ icon, label, value }: { icon: React.ReactNode; label: string; value: string | null }) {
-  if (!value) return null
-  return (
-    <div className="flex items-start gap-3">
-      <span className="flex h-7 w-7 flex-shrink-0 items-center justify-center rounded-lg bg-white/[0.04] text-slate-400 border border-white/[0.08]" aria-hidden="true">
-        {icon}
-      </span>
-      <div className="min-w-0 flex-1">
-        <p className="text-[10px] font-bold uppercase tracking-wider text-slate-500">{label}</p>
-        <p className="mt-0.5 text-xs font-semibold text-slate-200 break-words">{value}</p>
-      </div>
-    </div>
-  )
-}
-
-// ── Page Component ─────────────────────────────────────────────────────────
 
 export default async function OpportunityDetailPage({
   params,
@@ -164,7 +124,7 @@ export default async function OpportunityDetailPage({
           .eq("is_active", true)
           .eq("type", op.type)
           .neq("id", op.id)
-          .limit(3)
+          .limit(4)
         if (rel && rel.length > 0) relatedOpportunities = rel as OpportunityRow[]
       }
     } catch (err) {
@@ -172,7 +132,6 @@ export default async function OpportunityDetailPage({
     }
   }
 
-  // Fallback to seed dataset
   if (!op) {
     op = MOCK_OPPORTUNITIES.find((item) => item.id === id) ?? null
   }
@@ -182,7 +141,7 @@ export default async function OpportunityDetailPage({
   if (relatedOpportunities.length === 0) {
     relatedOpportunities = MOCK_OPPORTUNITIES.filter(
       (item) => item.type === op?.type && item.id !== op?.id
-    ).slice(0, 3)
+    ).slice(0, 4)
   }
 
   function formatDate(iso: string | null) {
@@ -191,113 +150,98 @@ export default async function OpportunityDetailPage({
       day: "numeric",
       month: "short",
       year: "numeric",
-      hour: "2-digit",
-      minute: "2-digit",
     })
   }
 
-  return (
-    <div className="min-h-screen pb-24">
-      {/* ── Banner Image / Header ───────────────────────── */}
-      <div className={`relative w-full overflow-hidden border-b border-white/[0.08] ${op.banner_image_url ? "h-56 sm:h-64 md:h-72 bg-slate-900" : "h-28 sm:h-32 bg-gradient-to-r from-slate-900 via-[#151824] to-[#090a0f]"}`}>
-        {op.banner_image_url ? (
-          <Image
-            src={op.banner_image_url}
-            alt={op.title}
-            fill
-            unoptimized
-            className="object-cover"
-            priority
-          />
-        ) : (
-          <div className="absolute inset-0 bg-grid-pattern opacity-60" />
-        )}
-        {/* Dark gradient fade */}
-        <div className="absolute inset-0 bg-gradient-to-t from-[#090a0f] via-[#090a0f]/50 to-transparent" />
+  // Calculate deadline days
+  let deadlineDiffDays: number | null = null
+  let isUrgent = false
+  let isPast = false
+  if (op.application_deadline) {
+    const deadlineMs = new Date(op.application_deadline).getTime()
+    const nowMs = Date.now()
+    deadlineDiffDays = Math.ceil((deadlineMs - nowMs) / (1000 * 60 * 60 * 24))
+    if (deadlineDiffDays <= 0) isPast = true
+    else if (deadlineDiffDays <= 2) isUrgent = true
+  }
 
-        {/* Back Link Button */}
-        <div className="absolute left-4 top-4 sm:left-8 sm:top-6 z-20">
+  return (
+    <div className="min-h-screen bg-paper text-ink pb-24">
+      {/* ── Editorial Top Navigation ───────────────────────── */}
+      <div className="border-b border-hairline bg-paper">
+        <div className="mx-auto max-w-7xl px-4 py-4 sm:px-6 lg:px-8">
           <Link
             href="/opportunities"
-            className="inline-flex items-center gap-1.5 rounded-lg bg-[#12141c]/90 px-3.5 py-1.5 text-xs font-semibold text-slate-200 backdrop-blur-md transition hover:bg-[#1a1d29] hover:text-white border border-white/10 shadow-sm"
+            className="inline-flex items-center gap-2 text-xs font-medium text-ink-muted hover:text-ink transition"
           >
-            ← Back to Feed
+            <span>Back to Bulletin</span>
           </Link>
         </div>
       </div>
 
-      {/* ── Main Content Container ──────────────────────── */}
-      <div className="mx-auto max-w-5xl px-4 sm:px-6 lg:px-8">
-        <div className="-mt-8 sm:-mt-10 relative z-10 mb-8">
-          {/* Platform & Type Badges */}
-          <div className="flex flex-wrap items-center gap-2 mb-3">
-            <span className={`inline-flex items-center rounded-md border px-2.5 py-0.5 text-xs font-semibold capitalize shadow-sm ${TYPE_BADGE[op.type] ?? ""}`}>
-              {op.type}
-            </span>
-            {op.mode && (
-              <span className={`inline-flex items-center rounded-md border px-2.5 py-0.5 text-xs font-medium capitalize shadow-sm ${MODE_BADGE[op.mode] ?? ""}`}>
-                {op.mode}
+      {/* ── Main Article Layout ───────────────────────────── */}
+      <main className="mx-auto max-w-7xl px-4 pt-8 sm:px-6 lg:px-8">
+        <div className="grid grid-cols-1 gap-12 lg:grid-cols-12">
+          {/* Left Column: Title, Metadata, Body (8 cols) */}
+          <article className="lg:col-span-8">
+            {/* Platform accent & classification tag */}
+            <div className="flex items-center gap-4 text-xs">
+              {op.source_platform && (
+                <span className={`border-l-2 pl-2 font-medium uppercase tracking-wider ${platformAccent(op.source_platform)}`}>
+                  {op.source_platform}
+                </span>
+              )}
+              <span className="text-ink-muted capitalize">
+                {op.type}
               </span>
-            )}
-            {op.source_platform && (
-              <span className={`rounded-md border px-2.5 py-0.5 text-xs font-semibold uppercase tracking-wider shadow-sm ${platformCls(op.source_platform)}`}>
-                {op.source_platform}
-              </span>
-            )}
-            {op.is_featured && (
-              <span className="rounded-md border border-amber-500/30 bg-amber-500/15 px-2.5 py-0.5 text-xs font-semibold text-amber-300">
-                Featured
-              </span>
-            )}
-          </div>
-
-          {/* Opportunity Title */}
-          <h1 className="font-display text-2xl font-bold leading-tight tracking-tight text-slate-100 sm:text-3xl md:text-4xl">
-            {op.title}
-          </h1>
-
-          {/* Organizer */}
-          {op.organizer && (
-            <p className="mt-2 text-sm text-slate-400 font-normal">
-              Organized by <span className="text-slate-200 font-semibold">{op.organizer}</span>
-            </p>
-          )}
-        </div>
-
-        {/* ── Two Column Grid ───────────────────────────── */}
-        <div className="grid grid-cols-1 gap-8 lg:grid-cols-3">
-          {/* Left Main Content Column (2 cols) */}
-          <div className="lg:col-span-2 space-y-6">
-            {/* Deadline Banner */}
-            <div className="flex flex-wrap items-center justify-between gap-3 rounded-xl border border-white/[0.08] bg-[#12141c] p-4">
-              <div className="flex items-center gap-3">
-                <div className="flex h-9 w-9 items-center justify-center rounded-lg bg-white/[0.04] border border-white/10 text-slate-400">
-                  <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                    <circle cx="12" cy="12" r="10" />
-                    <polyline points="12 6 12 12 16 14" />
-                  </svg>
-                </div>
-                <div>
-                  <p className="text-[10px] font-bold uppercase tracking-wider text-slate-400">Application Deadline</p>
-                  <p className="text-xs font-semibold text-slate-200">
-                    {op.application_deadline ? formatDate(op.application_deadline) : "Open / Ongoing"}
-                  </p>
-                </div>
-              </div>
-              <DeadlineBadge deadline={op.application_deadline} />
+              {op.mode && (
+                <span className="text-ink-muted capitalize">
+                  {op.mode}
+                </span>
+              )}
+              {op.is_featured && (
+                <span className="font-serif italic text-ink">
+                  Featured
+                </span>
+              )}
             </div>
 
-            {/* Description Section */}
+            {/* Opportunity Title: Large Fraunces Serif */}
+            <h1 className="mt-4 font-serif text-3xl sm:text-4xl md:text-5xl font-normal leading-[1.15] tracking-tight text-ink">
+              {op.title}
+            </h1>
+
+            {/* Organizer */}
+            {op.organizer && (
+              <p className="mt-3 text-sm text-ink-muted">
+                Presented by <span className="text-ink font-medium">{op.organizer}</span>
+              </p>
+            )}
+
+            {/* Optional Banner Image — displayed with clean hairline border */}
+            {op.banner_image_url && (
+              <div className="mt-8 relative aspect-[16/8] w-full overflow-hidden border border-hairline bg-paper-muted">
+                <Image
+                  src={op.banner_image_url}
+                  alt={op.title}
+                  fill
+                  unoptimized
+                  className="object-cover"
+                  priority
+                />
+              </div>
+            )}
+
+            {/* Hairline Divider */}
+            <div className="my-8 border-b border-hairline" />
+
+            {/* Description Body: Inter with ~75 char line length (max-w-prose) */}
             {op.description && (
-              <div className="rounded-xl border border-white/[0.08] bg-[#12141c] p-6 sm:p-7">
-                <h2 className="mb-3 text-xs font-bold uppercase tracking-wider text-slate-400 flex items-center gap-2">
-                  <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                    <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z" />
-                    <polyline points="14 2 14 8 20 8" />
-                  </svg>
-                  Overview &amp; Details
+              <div className="space-y-4">
+                <h2 className="font-serif text-lg font-normal text-ink">
+                  Overview
                 </h2>
-                <div className="prose prose-invert prose-sm max-w-none text-slate-300 leading-relaxed whitespace-pre-wrap">
+                <div className="max-w-prose text-sm sm:text-base text-ink/90 leading-relaxed whitespace-pre-wrap">
                   {op.description}
                 </div>
               </div>
@@ -305,63 +249,82 @@ export default async function OpportunityDetailPage({
 
             {/* Eligibility Section */}
             {op.eligibility && (
-              <div className="rounded-xl border border-white/[0.08] bg-[#12141c] p-6 sm:p-7">
-                <h2 className="mb-2.5 text-xs font-bold uppercase tracking-wider text-slate-400 flex items-center gap-2">
-                  <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                    <path d="M22 10v6M2 10l10-5 10 5-10 5z" />
-                    <path d="M6 12v5c3 3 9 3 12 0v-5" />
-                  </svg>
-                  Eligibility Criteria
+              <div className="mt-8 space-y-2 border-t border-hairline pt-6">
+                <h2 className="font-serif text-lg font-normal text-ink">
+                  Eligibility
                 </h2>
-                <p className="text-xs sm:text-sm text-slate-300 leading-relaxed">{op.eligibility}</p>
+                <div className="max-w-prose text-sm sm:text-base text-ink/90 leading-relaxed">
+                  {op.eligibility}
+                </div>
               </div>
             )}
 
-            {/* Tags Section */}
+            {/* Tags / Skills */}
             {op.tags && op.tags.length > 0 && (
-              <div className="rounded-xl border border-white/[0.08] bg-[#12141c] p-6">
-                <h2 className="mb-3 text-xs font-bold uppercase tracking-wider text-slate-400 flex items-center gap-2">
-                  <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                    <path d="M20.59 13.41l-7.17 7.17a2 2 0 0 1-2.83 0L2 12V2h10l8.59 8.59a2 2 0 0 1 0 2.82z" />
-                    <line x1="7" y1="7" x2="7.01" y2="7" />
-                  </svg>
-                  Skills &amp; Themes
+              <div className="mt-8 border-t border-hairline pt-6">
+                <h2 className="font-serif text-xs uppercase tracking-widest text-ink-muted mb-3">
+                  Categorized Skills
                 </h2>
-                <div className="flex flex-wrap gap-1.5">
+                <div className="flex flex-wrap gap-2">
                   {op.tags.map((tag) => (
                     <TagChip key={tag} tag={tag} size="sm" />
                   ))}
                 </div>
               </div>
             )}
-          </div>
+          </article>
 
-          {/* Right Sidebar Column (1 col) */}
-          <div className="space-y-5">
-            {/* Primary Outbound Action Card */}
-            <div className="rounded-xl border border-white/[0.12] bg-[#12141c] p-5 shadow-xl space-y-4">
-              <h3 className="text-xs font-bold uppercase tracking-wider text-slate-400">Application Gateway</h3>
+          {/* Right Column: Prominent Deadline Numeral Block & Outbound Action (4 cols) */}
+          <aside className="lg:col-span-4 space-y-6">
+            {/* Prominent Serif Numeral Countdown Block */}
+            <div className="border border-hairline bg-paper p-6">
+              <p className="text-xs font-serif italic text-ink-muted">Application Window</p>
               
-              {/* Outbound link */}
+              {isPast ? (
+                <div className="mt-3">
+                  <span className="font-serif text-3xl font-normal text-ink-muted">Closed</span>
+                  <p className="mt-2 text-xs text-ink-muted">
+                    This window ended on {formatDate(op.application_deadline)}.
+                  </p>
+                </div>
+              ) : deadlineDiffDays !== null ? (
+                <div className="mt-3">
+                  <div className="flex items-baseline gap-2">
+                    <span className={`font-serif text-5xl sm:text-6xl font-semibold tracking-tight ${isUrgent ? "text-signal" : "text-ink"}`}>
+                      {deadlineDiffDays}
+                    </span>
+                    <span className="text-xs text-ink-muted uppercase tracking-wider">
+                      {deadlineDiffDays === 1 ? "day left" : "days left"}
+                    </span>
+                  </div>
+                  <p className="mt-2 text-xs text-ink-muted">
+                    Closes on {formatDate(op.application_deadline)}
+                  </p>
+                </div>
+              ) : (
+                <div className="mt-3">
+                  <span className="font-serif text-2xl font-normal text-ink">Rolling / Ongoing</span>
+                  <p className="mt-2 text-xs text-ink-muted">
+                    Applications accepted continuously until filled.
+                  </p>
+                </div>
+              )}
+            </div>
+
+            {/* Primary Action Card: Signal Orange Outbound Button */}
+            <div className="border border-hairline bg-paper p-6 space-y-4">
               <a
                 href={sanitizeExternalUrl(op.source_url)}
                 target="_blank"
                 rel="noopener noreferrer"
                 id="apply-now-btn"
-                className="group flex w-full items-center justify-center gap-2 rounded-lg bg-indigo-600 px-5 py-3 text-xs font-semibold text-white shadow-md shadow-indigo-600/25 transition-all hover:bg-indigo-500 active:scale-95"
+                className="flex w-full items-center justify-center border border-signal bg-signal px-5 py-3.5 text-xs font-medium text-white transition hover:bg-signal/90 active:scale-95 text-center"
               >
                 Apply on {op.source_platform || "Platform"}
-                <svg
-                  width="12" height="12" viewBox="0 0 14 14" fill="none"
-                  className="transition-transform group-hover:translate-x-0.5 group-hover:-translate-y-0.5"
-                  aria-hidden="true"
-                >
-                  <path d="M3 11L11 3M11 3H5M11 3V9" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
-                </svg>
               </a>
 
-              {/* Bookmark & Calendar interaction */}
-              <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
+              {/* Bookmark & Calendar Actions */}
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 pt-1">
                 <BookmarkButton
                   opportunityId={op.id}
                   userId={userId}
@@ -371,73 +334,78 @@ export default async function OpportunityDetailPage({
                 <AddToCalendarButton opportunity={op} variant="secondary" />
               </div>
 
-              {/* Attribution line */}
-              <div className="border-t border-white/[0.06] pt-3 text-center">
-                <p className="text-xs text-slate-400">
-                  Verified listing from{" "}
-                  <a
-                    href={sanitizeExternalUrl(op.source_url)}
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    className="font-medium text-indigo-400 hover:text-indigo-300 underline underline-offset-2"
-                  >
-                    {op.source_platform || "Original Platform"}
-                  </a>
-                </p>
-              </div>
+              {/* Verification attribution */}
+              <p className="text-[11px] text-ink-muted text-center pt-2 border-t border-hairline">
+                Verified listing from {op.source_platform || "original source"}.
+              </p>
             </div>
 
-            {/* Quick Metadata Info Card */}
-            <div className="rounded-xl border border-white/[0.08] bg-[#12141c] p-5 space-y-3.5">
-              <h3 className="text-xs font-bold uppercase tracking-wider text-slate-400">Key Metadata</h3>
-              <div className="space-y-3">
-                <MetaRow
-                  icon={<svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"/><circle cx="12" cy="10" r="3"/></svg>}
-                  label="Location"
-                  value={op.location}
-                />
-                <MetaRow
-                  icon={<svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>}
-                  label="Team Size"
-                  value={op.team_size}
-                />
-                <MetaRow
-                  icon={<svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M6 9H4.5a2.5 2.5 0 0 1 0-5H6"/><path d="M18 9h1.5a2.5 2.5 0 0 0 0-5H18"/><path d="M4 22h16"/><path d="M10 14.66V17c0 .55-.45 1-1 1H7.5a1.5 1.5 0 0 1-1.5-1.5V14.66a8 8 0 0 1-2-5.66V4h16v5a8 8 0 0 1-2 5.66V16.5a1.5 1.5 0 0 1-1.5 1.5H15c-.55 0-1-.45-1-1v-2.34"/></svg>}
-                  label="Prize Pool"
-                  value={op.prize_pool}
-                />
-                <MetaRow
-                  icon={<svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><line x1="12" y1="1" x2="12" y2="23"/><path d="M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"/></svg>}
-                  label="Stipend"
-                  value={op.stipend}
-                />
-                <MetaRow
-                  icon={<svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><rect x="3" y="4" width="18" height="18" rx="2" ry="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>}
-                  label="Starts On"
-                  value={formatDate(op.start_date)}
-                />
-                <MetaRow
-                  icon={<svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M4 15s1-1 4-1 5 2 8 2 4-1 4-1V3s-1 1-4 1-5-2-8-2-4 1-4 1z"/><line x1="4" y1="22" x2="4" y2="15"/></svg>}
-                  label="Ends On"
-                  value={formatDate(op.end_date)}
-                />
-                <MetaRow
-                  icon={<svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>}
-                  label="Apply By"
-                  value={formatDate(op.application_deadline)}
-                />
-              </div>
+            {/* Key Metadata Table */}
+            <div className="border border-hairline bg-paper p-6 space-y-3">
+              <h3 className="font-serif text-xs uppercase tracking-widest text-ink-muted pb-2 border-b border-hairline">
+                Listing Details
+              </h3>
+              <dl className="space-y-2.5 text-xs">
+                {op.location && (
+                  <div className="flex justify-between gap-2">
+                    <dt className="text-ink-muted">Location</dt>
+                    <dd className="font-medium text-ink text-right">{op.location}</dd>
+                  </div>
+                )}
+                {op.team_size && (
+                  <div className="flex justify-between gap-2">
+                    <dt className="text-ink-muted">Team</dt>
+                    <dd className="font-medium text-ink text-right">{op.team_size}</dd>
+                  </div>
+                )}
+                {op.prize_pool && (
+                  <div className="flex justify-between gap-2">
+                    <dt className="text-ink-muted">Prize Pool</dt>
+                    <dd className="font-medium text-ink text-right">{op.prize_pool}</dd>
+                  </div>
+                )}
+                {op.stipend && (
+                  <div className="flex justify-between gap-2">
+                    <dt className="text-ink-muted">Stipend</dt>
+                    <dd className="font-medium text-forest text-right">{op.stipend}</dd>
+                  </div>
+                )}
+                {op.start_date && (
+                  <div className="flex justify-between gap-2">
+                    <dt className="text-ink-muted">Starts</dt>
+                    <dd className="font-medium text-ink text-right">{formatDate(op.start_date)}</dd>
+                  </div>
+                )}
+                {op.end_date && (
+                  <div className="flex justify-between gap-2">
+                    <dt className="text-ink-muted">Ends</dt>
+                    <dd className="font-medium text-ink text-right">{formatDate(op.end_date)}</dd>
+                  </div>
+                )}
+              </dl>
             </div>
-          </div>
+          </aside>
         </div>
 
-        {/* ── Related Opportunities ────────────────────────── */}
+        {/* ── Related Bulletin Listings ───────────────────────── */}
         {relatedOpportunities.length > 0 && (
-          <div className="mt-16 border-t border-white/[0.07] pt-10">
-            <h2 className="font-display text-xl font-bold tracking-tight text-white mb-6">
-              More {op.type === "hackathon" ? "Hackathons" : "Internships"} You Might Like
-            </h2>
-            <div className="grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-3">
+          <section className="mt-20 border-t border-hairline pt-10">
+            <div className="flex items-baseline justify-between mb-6">
+              <div>
+                <p className="text-xs font-serif italic text-ink-muted">Similar listings</p>
+                <h2 className="font-serif text-2xl font-normal tracking-tight text-ink mt-1">
+                  More {op.type === "hackathon" ? "Hackathons" : "Internships"}
+                </h2>
+              </div>
+              <Link
+                href={op.type === "hackathon" ? "/opportunities?type=hackathon" : "/opportunities?type=internship"}
+                className="text-xs font-medium text-ink-muted hover:text-ink hover:underline decoration-ink/40 underline-offset-4 transition"
+              >
+                View all
+              </Link>
+            </div>
+
+            <div className="border-t border-hairline divide-y divide-hairline">
               {relatedOpportunities.map((related) => (
                 <OpportunityCard
                   key={related.id}
@@ -447,9 +415,9 @@ export default async function OpportunityDetailPage({
                 />
               ))}
             </div>
-          </div>
+          </section>
         )}
-      </div>
+      </main>
     </div>
   )
 }

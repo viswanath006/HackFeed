@@ -9,29 +9,43 @@ const config: Config = {
   theme: {
     extend: {
       fontFamily: {
-        sans: ["var(--font-sans)", "system-ui", "-apple-system", "BlinkMacSystemFont", "Segoe UI", "Roboto", "sans-serif"],
-        display: ["var(--font-display)", "var(--font-sans)", "system-ui", "sans-serif"],
-        mono: ["var(--font-mono)", "ui-monospace", "SFMono-Regular", "Menlo", "Monaco", "Consolas", "monospace"],
+        serif: ["var(--font-serif)", "Fraunces", "Georgia", "serif"],
+        display: ["var(--font-serif)", "Fraunces", "Georgia", "serif"],
+        sans: ["var(--font-sans)", "Inter", "system-ui", "-apple-system", "BlinkMacSystemFont", "Segoe UI", "sans-serif"],
+        mono: ["var(--font-mono)", "ui-monospace", "SFMono-Regular", "Menlo", "Consolas", "monospace"],
+      },
+      fontSize: {
+        "display-hero": ["3.5rem", { lineHeight: "1.08", letterSpacing: "-0.03em" }],
+        "display-lg": ["2.5rem", { lineHeight: "1.15", letterSpacing: "-0.025em" }],
+        "display-md": ["1.875rem", { lineHeight: "1.25", letterSpacing: "-0.02em" }],
+        "display-sm": ["1.375rem", { lineHeight: "1.35", letterSpacing: "-0.015em" }],
+        "numeral-xl": ["2.25rem", { lineHeight: "1", letterSpacing: "-0.03em" }],
+        "numeral-lg": ["1.75rem", { lineHeight: "1", letterSpacing: "-0.02em" }],
       },
       colors: {
-        background: "#090a0f",
-        surface: {
-          DEFAULT: "#0f1117",
-          card: "#12141c",
-          elevated: "#171a24",
-          hover: "#1e2230",
+        paper: {
+          DEFAULT: "#F7F5F0",
+          muted: "#EFECE4",
+          subtle: "#E8E4D9",
         },
-        brand: {
-          50: "#eef2ff",
-          100: "#e0e7ff",
-          200: "#c7d2fe",
-          300: "#a5b4fc",
-          400: "#818cf8",
-          500: "#6366f1",
-          600: "#4f46e5",
-          700: "#4338ca",
-          800: "#3730a3",
-          900: "#312e81",
+        ink: {
+          DEFAULT: "#161512",
+          muted: "#6E6A63",
+          faint: "#9C978D",
+        },
+        signal: {
+          DEFAULT: "#FF4B1F",
+          hover: "#E03E15",
+          faint: "#FFF2EE",
+        },
+        forest: {
+          DEFAULT: "#1B4332",
+          light: "#2D6A4F",
+          faint: "#EFF6F2",
+        },
+        hairline: {
+          DEFAULT: "#D4CFC4",
+          dark: "#B8B1A2",
         },
       },
     },

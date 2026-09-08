@@ -2,33 +2,32 @@
 @tailwind components;
 @tailwind utilities;
 
-/* ── Professional SaaS Dark Design Tokens (Linear / Stripe inspired) ── */
+/* ── Distinctive Editorial Design Tokens ─────────────────────── */
 :root {
-  --bg:             #090a0f;
-  --surface:        #0f1117;
-  --surface-card:   #12141c;
-  --surface-subtle: #171a24;
-  --surface-hover:  #1a1d29;
-  --border:         rgba(255, 255, 255, 0.08);
-  --border-hover:   rgba(255, 255, 255, 0.16);
-  --border-accent:  rgba(99, 102, 241, 0.35);
-  --text:           #f8fafc;
-  --text-secondary: #cbd5e1;
-  --text-muted:     #828fa3;
-  --accent:         #6366f1;
-  --accent-light:   #818cf8;
+  --color-paper:        #F7F5F0;
+  --color-paper-muted:  #EFECE4;
+  --color-paper-subtle: #E8E4D9;
+  --color-ink:          #161512;
+  --color-ink-muted:    #6E6A63;
+  --color-ink-faint:    #9C978D;
+  --color-signal:       #FF4B1F;
+  --color-signal-hover: #E03E15;
+  --color-forest:       #1B4332;
+  --color-forest-light: #2D6A4F;
+  --color-border:       #D4CFC4;
 }
 
 /* ── Base ──────────────────────────────────────────────────── */
 html {
   scroll-behavior: smooth;
   -webkit-tap-highlight-color: transparent;
+  background-color: var(--color-paper);
 }
 
 body {
-  background-color: var(--bg);
-  color: var(--text);
-  font-family: var(--font-sans), system-ui, -apple-system, sans-serif;
+  background-color: var(--color-paper);
+  color: var(--color-ink);
+  font-family: var(--font-sans), Inter, system-ui, -apple-system, sans-serif;
   letter-spacing: -0.011em;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
@@ -36,22 +35,25 @@ body {
 }
 
 h1, h2, h3, h4, h5, h6 {
-  font-family: var(--font-display), var(--font-sans), system-ui, sans-serif;
+  font-family: var(--font-serif), Fraunces, Georgia, serif;
   letter-spacing: -0.025em;
-  text-wrap: balance;
+  color: var(--color-ink);
+  font-feature-settings: "opsz" 36;
 }
 
-code, pre, kbd, samp {
-  font-family: var(--font-mono), ui-monospace, monospace;
+/* Accessible visible keyboard focus */
+:focus-visible {
+  outline: 1.5px solid var(--color-ink);
+  outline-offset: 2px;
 }
 
-/* ── Custom Scrollbar ───────────────────────────────────────── */
-::-webkit-scrollbar        { width: 6px; height: 6px; }
-::-webkit-scrollbar-track  { background: transparent; }
-::-webkit-scrollbar-thumb  { background: rgba(255, 255, 255, 0.12); border-radius: 999px; }
-::-webkit-scrollbar-thumb:hover { background: rgba(255, 255, 255, 0.22); }
+/* ── Subtle Scrollbars ──────────────────────────────────────── */
+::-webkit-scrollbar        { width: 5px; height: 5px; }
+::-webkit-scrollbar-track  { background: var(--color-paper); }
+::-webkit-scrollbar-thumb  { background: var(--color-border); border-radius: 4px; }
+::-webkit-scrollbar-thumb:hover { background: var(--color-ink-faint); }
 
-/* ── Typography & Clamp ─────────────────────────────────────── */
+/* ── Line Clamps ────────────────────────────────────────────── */
 .line-clamp-1 {
   display: -webkit-box;
   -webkit-line-clamp: 1;
@@ -71,57 +73,52 @@ code, pre, kbd, samp {
   overflow: hidden;
 }
 
-/* ── Subtle Geometric Patterns ──────────────────────────────── */
-.bg-grid-pattern {
-  background-size: 32px 32px;
-  background-image: 
-    linear-gradient(to right, rgba(255, 255, 255, 0.025) 1px, transparent 1px),
-    linear-gradient(to bottom, rgba(255, 255, 255, 0.025) 1px, transparent 1px);
-}
-
-.bg-dot-pattern {
-  background-image: radial-gradient(rgba(255, 255, 255, 0.07) 1px, transparent 1px);
-  background-size: 20px 20px;
-}
-
-/* ── Refined Gradient Typography ────────────────────────────── */
-.gradient-heading {
-  background: linear-gradient(180deg, #ffffff 0%, #cbd5e1 100%);
-  -webkit-background-clip: text;
-  -webkit-text-fill-color: transparent;
-  background-clip: text;
-}
-
-.gradient-brand {
-  background: linear-gradient(135deg, #818cf8 0%, #a5b4fc 60%, #c084fc 100%);
-  -webkit-background-clip: text;
-  -webkit-text-fill-color: transparent;
-  background-clip: text;
-}
-
-/* ── Glass Surfaces ─────────────────────────────────────────── */
-.glass-panel {
-  background: rgba(18, 20, 28, 0.75);
-  backdrop-filter: blur(16px);
-  -webkit-backdrop-filter: blur(16px);
-  border: 1px solid rgba(255, 255, 255, 0.08);
-}
-
 .hide-scrollbar::-webkit-scrollbar { display: none; }
 .hide-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
 
-/* ── Keyframe Animations ────────────────────────────────────── */
-@keyframes shimmer {
+/* ── Editorial Utility Classes ──────────────────────────────── */
+.hairline-b {
+  border-bottom: 1px solid var(--color-border);
+}
+.hairline-t {
+  border-top: 1px solid var(--color-border);
+}
+.hairline-l {
+  border-left: 1px solid var(--color-border);
+}
+.hairline-r {
+  border-right: 1px solid var(--color-border);
+}
+
+/* Single deliberate moment of motion on initial page load */
+@keyframes editorialFadeIn {
+  from {
+    opacity: 0;
+    transform: translateY(6px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.animate-editorial-fade {
+  animation: editorialFadeIn 0.6s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+}
+
+/* Skeleton Loading in Paper Tone */
+@keyframes paperShimmer {
   0%   { background-position: -400px 0; }
   100% { background-position: 400px 0; }
 }
+
 .skeleton {
   background: linear-gradient(
     90deg,
-    rgba(255,255,255,0.02) 25%,
-    rgba(255,255,255,0.06) 50%,
-    rgba(255,255,255,0.02) 75%
+    var(--color-paper-muted) 25%,
+    var(--color-paper-subtle) 50%,
+    var(--color-paper-muted) 75%
   );
   background-size: 800px 100%;
-  animation: shimmer 1.8s infinite ease-in-out;
+  animation: paperShimmer 1.8s infinite ease-in-out;
 }

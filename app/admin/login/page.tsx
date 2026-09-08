@@ -142,7 +142,7 @@ function AdminLoginForm() {
 
       <p className="footer-text">
         Not an admin?{" "}
-        <Link href="/login">Go to student sign in →</Link>
+        <Link href="/login">Go to student sign in</Link>
       </p>
     </div>
   )

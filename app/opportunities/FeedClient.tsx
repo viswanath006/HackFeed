@@ -65,7 +65,7 @@ function SearchBar({
   return (
     <div className="relative flex-1">
       <svg
-        className="pointer-events-none absolute left-3.5 top-1/2 -translate-y-1/2 text-slate-500"
+        className="pointer-events-none absolute left-3.5 top-1/2 -translate-y-1/2 text-ink-muted"
         width="15" height="15" viewBox="0 0 16 16" fill="none"
         aria-hidden="true"
       >
@@ -78,8 +78,8 @@ function SearchBar({
         id="feed-search"
         value={value}
         onChange={(e) => onChange(e.target.value)}
-        placeholder="Search opportunities by title, organizer, or skill…"
-        className="w-full rounded-lg border border-white/[0.08] bg-[#12141c] py-2.5 pl-10 pr-16 text-xs text-slate-100 placeholder-slate-500 outline-none transition focus:border-indigo-500/50 focus:bg-[#151822] focus:ring-1 focus:ring-indigo-500/30"
+        placeholder="Search listings by title, organizer, or skill…"
+        className="w-full border border-hairline bg-paper py-2.5 pl-10 pr-16 text-xs sm:text-sm text-ink placeholder-ink-muted outline-none transition focus:border-ink focus:bg-paper-muted/30"
         aria-label="Search opportunities"
       />
       <div className="absolute right-3 top-1/2 -translate-y-1/2 flex items-center gap-1 pointer-events-none">
@@ -87,7 +87,7 @@ function SearchBar({
           <button
             type="button"
             onClick={() => onChange("")}
-            className="pointer-events-auto rounded p-0.5 text-slate-500 hover:text-slate-200"
+            className="pointer-events-auto p-0.5 text-ink-muted hover:text-ink"
             aria-label="Clear search"
           >
             <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
@@ -96,7 +96,7 @@ function SearchBar({
             </svg>
           </button>
         ) : (
-          <kbd className="hidden sm:inline-flex h-4 items-center justify-center rounded border border-white/10 bg-white/[0.04] px-1 text-[10px] font-mono text-slate-400">
+          <kbd className="hidden sm:inline-flex h-4 items-center justify-center border border-hairline bg-paper-muted px-1.5 text-[10px] font-mono text-ink-muted">
             /
           </kbd>
         )}
@@ -110,14 +110,14 @@ function SearchBar({
 function ResultCount({ count, loading }: { count: number; loading: boolean }) {
   if (loading) {
     return (
-      <div className="rounded-lg border border-white/[0.06] bg-[#12141c] px-3 py-2 text-xs text-slate-400 font-medium whitespace-nowrap animate-pulse">
-        Updating results…
+      <div className="border border-hairline bg-paper px-3.5 py-2 text-xs text-ink-muted font-medium whitespace-nowrap animate-pulse">
+        Updating…
       </div>
     )
   }
   return (
-    <div className="rounded-lg border border-white/[0.08] bg-[#12141c] px-3.5 py-2 text-xs text-slate-400 font-medium whitespace-nowrap">
-      Showing <span className="font-semibold text-slate-100">{count}</span> {count === 1 ? "opportunity" : "opportunities"}
+    <div className="border border-hairline bg-paper px-3.5 py-2 text-xs text-ink-muted font-medium whitespace-nowrap">
+      Showing <span className="font-semibold text-ink">{count}</span> {count === 1 ? "listing" : "listings"}
     </div>
   )
 }
@@ -354,26 +354,26 @@ export default function FeedClient({
 
       {/* ── Main Feed ──────────────────────────────────── */}
       <div className="min-w-0 flex-1">
-        {/* Quick Filter Segmented Pills */}
-        <div className="mb-4 flex flex-wrap items-center gap-1.5 border-b border-white/[0.06] pb-3">
+        {/* Quick Filter Plain-Text Toggles with Active Underline */}
+        <div className="mb-6 flex flex-wrap items-center gap-6 border-b border-hairline pb-3 text-xs sm:text-sm">
           <button
             type="button"
             onClick={() => handleQuickType("")}
-            className={`rounded-lg px-3 py-1.5 text-xs font-semibold transition-all ${
+            className={`pb-1 font-medium transition-colors ${
               filters.type === ""
-                ? "bg-white/[0.08] text-white shadow-sm"
-                : "text-slate-400 hover:bg-white/[0.04] hover:text-slate-200"
+                ? "text-ink border-b-2 border-ink"
+                : "text-ink-muted hover:text-ink"
             }`}
           >
-            All Opportunities
+            All Listings
           </button>
           <button
             type="button"
             onClick={() => handleQuickType("hackathon")}
-            className={`rounded-lg px-3 py-1.5 text-xs font-semibold transition-all ${
+            className={`pb-1 font-medium transition-colors ${
               filters.type === "hackathon"
-                ? "bg-indigo-500/20 text-indigo-200 border border-indigo-500/30"
-                : "text-slate-400 hover:bg-white/[0.04] hover:text-slate-200"
+                ? "text-ink border-b-2 border-ink"
+                : "text-ink-muted hover:text-ink"
             }`}
           >
             Hackathons
@@ -381,10 +381,10 @@ export default function FeedClient({
           <button
             type="button"
             onClick={() => handleQuickType("internship")}
-            className={`rounded-lg px-3 py-1.5 text-xs font-semibold transition-all ${
+            className={`pb-1 font-medium transition-colors ${
               filters.type === "internship"
-                ? "bg-sky-500/20 text-sky-200 border border-sky-500/30"
-                : "text-slate-400 hover:bg-white/[0.04] hover:text-slate-200"
+                ? "text-forest border-b-2 border-forest font-semibold"
+                : "text-ink-muted hover:text-forest"
             }`}
           >
             Internships
@@ -392,13 +392,13 @@ export default function FeedClient({
           <button
             type="button"
             onClick={() => handleQuickMode("online")}
-            className={`rounded-lg px-3 py-1.5 text-xs font-semibold transition-all inline-flex items-center gap-1.5 ${
+            className={`pb-1 font-medium transition-colors inline-flex items-center gap-1.5 ${
               filters.mode.includes("online")
-                ? "bg-emerald-500/15 text-emerald-300 border border-emerald-500/30"
-                : "text-slate-400 hover:bg-white/[0.04] hover:text-slate-200"
+                ? "text-forest border-b-2 border-forest font-semibold"
+                : "text-ink-muted hover:text-ink"
             }`}
           >
-            <span className="h-1.5 w-1.5 rounded-full bg-emerald-400" />
+            <span className="h-1.5 w-1.5 rounded-full bg-forest" />
             Online Only
           </button>
         </div>
@@ -409,9 +409,9 @@ export default function FeedClient({
           <ResultCount count={rows.length} loading={isPending} />
         </div>
 
-        {/* Opportunities Grid */}
+        {/* Opportunities Bulletin Listing */}
         {isPending ? (
-          <LoadingSkeleton count={9} />
+          <LoadingSkeleton count={8} />
         ) : rows.length === 0 ? (
           <EmptyState
             title="No opportunities found"
@@ -420,7 +420,7 @@ export default function FeedClient({
           />
         ) : (
           <>
-            <div className="grid grid-cols-1 gap-5 sm:grid-cols-2 xl:grid-cols-3">
+            <div className="border-t border-hairline divide-y divide-hairline">
               {rows.map((op) => (
                 <OpportunityCard
                   key={op.id}
@@ -438,13 +438,13 @@ export default function FeedClient({
             {/* Loading spinner */}
             {loadingMore && (
               <div className="flex justify-center py-8">
-                <div className="h-6 w-6 animate-spin rounded-full border-2 border-white/10 border-t-indigo-500" aria-label="Loading more opportunities" />
+                <div className="h-6 w-6 animate-spin rounded-full border-2 border-hairline border-t-ink" aria-label="Loading more opportunities" />
               </div>
             )}
 
             {/* End of Feed message */}
             {rows.length > 0 && !loadingMore && (
-              <div className="mt-12 text-center text-xs text-slate-500 py-6 border-t border-white/[0.06]">
+              <div className="mt-12 text-center text-xs text-ink-muted py-6 border-t border-hairline">
                 Verified listings synchronized across Unstop, Devfolio, HackerEarth &amp; H2Skill.
               </div>
             )}

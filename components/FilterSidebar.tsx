@@ -3,9 +3,10 @@
 /**
  * components/FilterSidebar.tsx
  *
- * Professional filter sidebar panel for HackFeed.
- * Desktop: sticky left sidebar panel.
- * Mobile: bottom-sheet modal drawer.
+ * Editorial filter sidebar for HackFeed.
+ * - Clean serif headings (no all-caps eyebrows)
+ * - Plain text toggles with underline / left-accent on active state
+ * - Hairline dividers between sections
  */
 
 import { useState, useEffect } from "react"
@@ -34,7 +35,7 @@ const DEFAULT_PLATFORMS = ["Unstop", "Devfolio", "HackerEarth", "H2Skill"]
 const SORTS: { value: SortOption; label: string }[] = [
   { value: "deadline", label: "Soonest deadline" },
   { value: "newest",   label: "Newest added"     },
-  { value: "prize",    label: "Highest prize / stipend" },
+  { value: "prize",    label: "Highest reward / stipend" },
 ]
 
 function FilterContent({
@@ -61,145 +62,137 @@ function FilterContent({
   const displayPlatforms = Array.from(new Set([...DEFAULT_PLATFORMS, ...platforms])).filter(Boolean)
 
   return (
-    <div className="flex flex-col gap-5 text-xs">
-      {/* Clear Button (if active filters exist) */}
+    <div className="flex flex-col gap-6 text-xs font-sans">
+      {/* Reset Action */}
       {hasFilters && (
-        <button
-          onClick={clearAll}
-          className="flex items-center gap-1.5 text-xs font-medium text-slate-400 hover:text-slate-100 transition-colors py-1"
-        >
-          <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
-            <path d="M3 12a9 9 0 1 0 9-9 9.75 9.75 0 0 0-6.74 2.74L3 8" />
-            <path d="M3 3v5h5" />
-          </svg>
-          <span>Reset all filters</span>
-        </button>
+        <div className="pb-2 border-b border-hairline">
+          <button
+            onClick={clearAll}
+            className="text-xs text-signal underline hover:text-signal-hover transition-colors"
+          >
+            Reset all active filters
+          </button>
+        </div>
       )}
 
       {/* Sort Section */}
       <section>
-        <h3 className="mb-2.5 text-[11px] font-bold uppercase tracking-wider text-slate-400">
-          Sort by
+        <h3 className="mb-2 font-serif text-sm font-semibold text-ink">
+          Order by
         </h3>
-        <div className="space-y-1.5">
-          {SORTS.map((s) => (
-            <label
-              key={s.value}
-              className={`flex cursor-pointer items-center gap-2.5 rounded-lg px-2.5 py-1.5 transition-colors ${
-                filters.sort === s.value ? "bg-white/[0.06] text-slate-100" : "text-slate-400 hover:bg-white/[0.03] hover:text-slate-200"
-              }`}
-            >
-              <input
-                type="radio"
-                name="sort"
-                value={s.value}
-                checked={filters.sort === s.value}
-                onChange={() => onChange({ ...filters, sort: s.value })}
-                className="h-3.5 w-3.5 accent-indigo-500 bg-white/5 border-white/20"
-              />
-              <span className={`text-xs ${filters.sort === s.value ? "font-semibold text-slate-100" : "font-normal"}`}>
+        <div className="space-y-1">
+          {SORTS.map((s) => {
+            const isSelected = filters.sort === s.value
+            return (
+              <button
+                key={s.value}
+                type="button"
+                onClick={() => onChange({ ...filters, sort: s.value })}
+                className={`block w-full text-left py-1 transition-colors ${
+                  isSelected
+                    ? "font-semibold text-ink border-l-2 border-ink pl-2"
+                    : "text-ink-muted hover:text-ink pl-2 border-l-2 border-transparent"
+                }`}
+              >
                 {s.label}
-              </span>
-            </label>
-          ))}
+              </button>
+            )
+          })}
         </div>
       </section>
 
-      {/* Opportunity Type Section */}
-      <section className="border-t border-white/[0.06] pt-4">
-        <h3 className="mb-2.5 text-[11px] font-bold uppercase tracking-wider text-slate-400">
-          Opportunity Type
+      {/* Opportunity Type */}
+      <section className="border-t border-hairline pt-4">
+        <h3 className="mb-2 font-serif text-sm font-semibold text-ink">
+          Opportunity type
         </h3>
-        <div className="space-y-1.5">
+        <div className="space-y-1">
           {[
-            { value: "", label: "All Opportunities" },
+            { value: "", label: "All listings" },
             { value: "hackathon", label: "Hackathons" },
-            { value: "internship", label: "Internships & Jobs" }
-          ].map((t) => (
-            <label
-              key={t.value}
-              className={`flex cursor-pointer items-center gap-2.5 rounded-lg px-2.5 py-1.5 transition-colors ${
-                filters.type === t.value ? "bg-white/[0.06] text-slate-100" : "text-slate-400 hover:bg-white/[0.03] hover:text-slate-200"
-              }`}
-            >
-              <input
-                type="radio"
-                name="type"
-                value={t.value}
-                checked={filters.type === t.value}
-                onChange={() => onChange({ ...filters, type: t.value as Filters["type"] })}
-                className="h-3.5 w-3.5 accent-indigo-500 bg-white/5 border-white/20"
-              />
-              <span className={`text-xs ${filters.type === t.value ? "font-semibold text-slate-100" : "font-normal"}`}>
+            { value: "internship", label: "Internships & roles" },
+          ].map((t) => {
+            const isSelected = filters.type === t.value
+            return (
+              <button
+                key={t.value}
+                type="button"
+                onClick={() => onChange({ ...filters, type: t.value as Filters["type"] })}
+                className={`block w-full text-left py-1 transition-colors ${
+                  isSelected
+                    ? "font-semibold text-ink border-l-2 border-ink pl-2"
+                    : "text-ink-muted hover:text-ink pl-2 border-l-2 border-transparent"
+                }`}
+              >
                 {t.label}
-              </span>
-            </label>
-          ))}
+              </button>
+            )
+          })}
         </div>
       </section>
 
       {/* Mode Section */}
-      <section className="border-t border-white/[0.06] pt-4">
-        <h3 className="mb-2.5 text-[11px] font-bold uppercase tracking-wider text-slate-400">
-          Format / Mode
+      <section className="border-t border-hairline pt-4">
+        <h3 className="mb-2 font-serif text-sm font-semibold text-ink">
+          Attendance format
         </h3>
-        <div className="space-y-1.5">
-          {MODES.map((m) => (
-            <label
-              key={m}
-              className={`flex cursor-pointer items-center gap-2.5 rounded-lg px-2.5 py-1.5 transition-colors ${
-                filters.mode.includes(m) ? "bg-white/[0.06] text-slate-100" : "text-slate-400 hover:bg-white/[0.03] hover:text-slate-200"
-              }`}
-            >
-              <input
-                type="checkbox"
-                checked={filters.mode.includes(m)}
-                onChange={() => toggle("mode", m)}
-                className="h-3.5 w-3.5 rounded accent-indigo-500 bg-white/5 border-white/20"
-              />
-              <span className="text-xs capitalize font-medium">
-                {m}
-              </span>
-            </label>
-          ))}
+        <div className="space-y-1">
+          {MODES.map((m) => {
+            const isSelected = filters.mode.includes(m)
+            return (
+              <button
+                key={m}
+                type="button"
+                onClick={() => toggle("mode", m)}
+                className={`flex items-center justify-between w-full text-left py-1 transition-colors capitalize ${
+                  isSelected ? "font-semibold text-ink" : "text-ink-muted hover:text-ink"
+                }`}
+              >
+                <span>{m}</span>
+                <span className={`text-[11px] ${isSelected ? "text-ink font-bold" : "text-hairline-dark"}`}>
+                  {isSelected ? "✓" : "+"}
+                </span>
+              </button>
+            )
+          })}
         </div>
       </section>
 
       {/* Platform Section */}
-      <section className="border-t border-white/[0.06] pt-4">
-        <h3 className="mb-2.5 text-[11px] font-bold uppercase tracking-wider text-slate-400">
-          Source Platform
+      <section className="border-t border-hairline pt-4">
+        <h3 className="mb-2 font-serif text-sm font-semibold text-ink">
+          Source platform
         </h3>
-        <div className="space-y-1.5">
-          {displayPlatforms.map((p) => (
-            <label
-              key={p}
-              className={`flex cursor-pointer items-center gap-2.5 rounded-lg px-2.5 py-1.5 transition-colors ${
-                filters.platform.includes(p) ? "bg-white/[0.06] text-slate-100" : "text-slate-400 hover:bg-white/[0.03] hover:text-slate-200"
-              }`}
-            >
-              <input
-                type="checkbox"
-                checked={filters.platform.includes(p)}
-                onChange={() => toggle("platform", p)}
-                className="h-3.5 w-3.5 rounded accent-indigo-500 bg-white/5 border-white/20"
-              />
-              <span className="text-xs font-medium">
-                {p}
-              </span>
-            </label>
-          ))}
+        <div className="space-y-1">
+          {displayPlatforms.map((p) => {
+            const isSelected = filters.platform.includes(p)
+            return (
+              <button
+                key={p}
+                type="button"
+                onClick={() => toggle("platform", p)}
+                className={`flex items-center justify-between w-full text-left py-1 transition-colors ${
+                  isSelected ? "font-semibold text-ink" : "text-ink-muted hover:text-ink"
+                }`}
+              >
+                <span>{p}</span>
+                <span className={`text-[11px] ${isSelected ? "text-ink font-bold" : "text-hairline-dark"}`}>
+                  {isSelected ? "✓" : "+"}
+                </span>
+              </button>
+            )
+          })}
         </div>
       </section>
 
-      {/* Tags Section */}
+      {/* Skills & Themes */}
       {allTags.length > 0 && (
-        <section className="border-t border-white/[0.06] pt-4">
-          <h3 className="mb-2.5 text-[11px] font-bold uppercase tracking-wider text-slate-400">
-            Skills &amp; Themes
+        <section className="border-t border-hairline pt-4">
+          <h3 className="mb-2 font-serif text-sm font-semibold text-ink">
+            Topic tags
           </h3>
           <div className="flex flex-wrap gap-1.5 max-h-48 overflow-y-auto pr-1">
-            {allTags.slice(0, 25).map((tag) => (
+            {allTags.slice(0, 24).map((tag) => (
               <TagChip
                 key={tag}
                 tag={tag}
@@ -233,18 +226,15 @@ export default function FilterSidebar(props: FilterSidebarProps) {
   return (
     <>
       {/* ── Desktop sidebar (lg+) ───────────────────────── */}
-      <aside className="hidden lg:block w-64 flex-shrink-0">
-        <div className="sticky top-24 rounded-xl border border-white/[0.08] bg-[#12141c] p-5 shadow-lg">
-          <div className="flex items-center justify-between mb-4 pb-3 border-b border-white/[0.06]">
-            <h2 className="text-xs font-bold uppercase tracking-wider text-slate-200 flex items-center gap-2">
-              <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="text-slate-400">
-                <polygon points="22 3 2 3 10 12.46 10 19 14 21 14 12.46 22 3" />
-              </svg>
-              Filters &amp; Sort
+      <aside className="hidden lg:block w-60 flex-shrink-0">
+        <div className="sticky top-20 border-r border-hairline pr-6 py-2">
+          <div className="flex items-center justify-between mb-4 pb-2 border-b border-hairline">
+            <h2 className="font-serif text-base font-bold text-ink">
+              Filter index
             </h2>
             {props.activeCount > 0 && (
-              <span className="rounded-full bg-indigo-500/15 border border-indigo-500/25 px-2 py-0.5 text-[10px] font-semibold text-indigo-300">
-                {props.activeCount} active
+              <span className="text-[11px] font-medium text-signal">
+                {props.activeCount} applied
               </span>
             )}
           </div>
@@ -258,16 +248,11 @@ export default function FilterSidebar(props: FilterSidebarProps) {
           onClick={() => setDrawerOpen(true)}
           id="filter-fab"
           aria-label="Open filters"
-          className="flex items-center gap-2 rounded-full bg-indigo-600 px-5 py-3 text-xs font-semibold text-white shadow-xl shadow-indigo-600/30 transition hover:bg-indigo-500 active:scale-95"
+          className="flex items-center gap-2 border border-ink bg-ink px-4 py-2.5 text-xs font-medium text-paper shadow-md"
         >
-          <svg width="14" height="14" viewBox="0 0 15 15" fill="currentColor" aria-hidden="true">
-            <path d="M1 3h13a.5.5 0 0 0 0-1H1a.5.5 0 0 0 0 1Zm2 4h9a.5.5 0 0 0 0-1H3a.5.5 0 0 0 0 1Zm2 4h5a.5.5 0 0 0 0-1H5a.5.5 0 0 0 0 1Z" />
-          </svg>
           <span>Filters</span>
           {props.activeCount > 0 && (
-            <span className="flex h-4 w-4 items-center justify-center rounded-full bg-white text-[10px] font-bold text-indigo-950">
-              {props.activeCount}
-            </span>
+            <span className="text-signal font-bold">({props.activeCount})</span>
           )}
         </button>
       </div>
@@ -276,40 +261,35 @@ export default function FilterSidebar(props: FilterSidebarProps) {
       {drawerOpen && (
         <>
           <div
-            className="fixed inset-0 z-40 bg-black/75 backdrop-blur-sm lg:hidden"
+            className="fixed inset-0 z-40 bg-ink/40 backdrop-blur-xs lg:hidden"
             onClick={() => setDrawerOpen(false)}
             aria-hidden="true"
           />
           <div
             role="dialog"
             aria-modal="true"
-            aria-label="Filters"
-            className="fixed bottom-0 left-0 right-0 z-50 max-h-[85vh] overflow-y-auto rounded-t-2xl border-t border-white/10 bg-[#12141c] p-6 shadow-2xl lg:hidden"
+            aria-label="Filter Index"
+            className="fixed bottom-0 left-0 right-0 z-50 max-h-[85vh] overflow-y-auto border-t border-hairline bg-paper p-6 shadow-xl lg:hidden"
           >
-            {/* Handle */}
-            <div className="mx-auto mb-4 h-1.5 w-10 rounded-full bg-white/20" aria-hidden="true" />
-            <div className="flex items-center justify-between mb-4 pb-3 border-b border-white/[0.08]">
-              <h2 className="text-sm font-semibold text-slate-100 flex items-center gap-2">
-                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="text-slate-400">
-                  <polygon points="22 3 2 3 10 12.46 10 19 14 21 14 12.46 22 3" />
-                </svg>
-                Filters &amp; Sort
+            <div className="flex items-center justify-between mb-4 pb-3 border-b border-hairline">
+              <h2 className="font-serif text-lg font-bold text-ink">
+                Filter index
               </h2>
               <button
                 onClick={() => setDrawerOpen(false)}
-                className="rounded-lg bg-white/5 p-1.5 text-slate-400 hover:text-white"
+                className="text-xs text-ink-muted hover:text-ink font-medium"
                 aria-label="Close filters"
               >
-                ✕
+                Close
               </button>
             </div>
             <FilterContent {...props} />
-            <div className="mt-6">
+            <div className="mt-6 pt-4 border-t border-hairline">
               <button
                 onClick={() => setDrawerOpen(false)}
-                className="w-full rounded-lg bg-indigo-600 py-3 text-xs font-semibold text-white shadow-md shadow-indigo-600/30 transition hover:bg-indigo-500"
+                className="w-full border border-ink bg-ink py-2.5 text-xs font-medium text-paper"
               >
-                Show Opportunities
+                View listings
               </button>
             </div>
           </div>
