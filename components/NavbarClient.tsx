@@ -12,6 +12,7 @@ import { useState, useRef, useEffect } from "react"
 import Link from "next/link"
 import { useRouter } from "next/navigation"
 import { createClient } from "@/lib/supabase/client"
+import ThemeToggle from "./ThemeToggle"
 
 interface UserProps {
   id: string
@@ -104,7 +105,10 @@ export default function NavbarClient({ user, isAdmin }: NavbarClientProps) {
         </div>
 
         {/* Right actions */}
-        <div className="flex items-center gap-3">
+        <div className="flex items-center gap-2.5 sm:gap-3">
+          {/* Theme Toggle */}
+          <ThemeToggle />
+
           {!user ? (
             <>
               <Link

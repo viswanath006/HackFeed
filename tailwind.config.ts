@@ -1,6 +1,7 @@
 import type { Config } from "tailwindcss"
 
 const config: Config = {
+  darkMode: ["class", '[data-theme="dark"]'],
   content: [
     "./app/**/*.{js,ts,jsx,tsx,mdx}",
     "./components/**/*.{js,ts,jsx,tsx,mdx}",
@@ -24,28 +25,28 @@ const config: Config = {
       },
       colors: {
         paper: {
-          DEFAULT: "#F7F5F0",
-          muted: "#EFECE4",
-          subtle: "#E8E4D9",
+          DEFAULT: "var(--color-paper)",
+          muted: "var(--color-paper-muted)",
+          subtle: "var(--color-paper-subtle)",
         },
         ink: {
-          DEFAULT: "#161512",
-          muted: "#6E6A63",
-          faint: "#9C978D",
+          DEFAULT: "var(--color-ink)",
+          muted: "var(--color-ink-muted)",
+          faint: "var(--color-ink-faint)",
         },
         signal: {
-          DEFAULT: "#FF4B1F",
-          hover: "#E03E15",
-          faint: "#FFF2EE",
+          DEFAULT: "var(--color-signal)",
+          hover: "var(--color-signal-hover)",
+          faint: "var(--color-signal-faint)",
         },
         forest: {
-          DEFAULT: "#1B4332",
-          light: "#2D6A4F",
-          faint: "#EFF6F2",
+          DEFAULT: "var(--color-forest)",
+          light: "var(--color-forest-light)",
+          faint: "var(--color-forest-faint)",
         },
         hairline: {
-          DEFAULT: "#D4CFC4",
-          dark: "#B8B1A2",
+          DEFAULT: "var(--color-border)",
+          dark: "var(--color-border-dark)",
         },
       },
     },

@@ -32,48 +32,48 @@ interface PlatformTheme {
 const PLATFORM_THEMES: Record<string, PlatformTheme> = {
   unstop: {
     name: "Unstop",
-    bg: "bg-[#FDF6ED]",
-    text: "text-[#8C4A14]",
-    border: "border-[#EADBCA]",
-    accent: "text-amber-700",
-    watermarkColor: "rgba(140, 74, 20, 0.08)",
-    patternStroke: "rgba(140, 74, 20, 0.07)",
+    bg: "bg-[#FDF6ED] dark:bg-[#20150C]",
+    text: "text-[#8C4A14] dark:text-[#FBBF24]",
+    border: "border-[#EADBCA] dark:border-[#3E2716]",
+    accent: "text-amber-700 dark:text-amber-400",
+    watermarkColor: "currentColor",
+    patternStroke: "currentColor",
   },
   devfolio: {
     name: "Devfolio",
-    bg: "bg-[#F0F4F9]",
-    text: "text-[#1E3A8A]",
-    border: "border-[#D1DFEC]",
-    accent: "text-blue-700",
-    watermarkColor: "rgba(30, 58, 138, 0.08)",
-    patternStroke: "rgba(30, 58, 138, 0.07)",
+    bg: "bg-[#F0F4F9] dark:bg-[#0F172A]",
+    text: "text-[#1E3A8A] dark:text-[#93C5FD]",
+    border: "border-[#D1DFEC] dark:border-[#1E293B]",
+    accent: "text-blue-700 dark:text-blue-400",
+    watermarkColor: "currentColor",
+    patternStroke: "currentColor",
   },
   hackerearth: {
     name: "HackerEarth",
-    bg: "bg-[#EFF6F2]",
-    text: "text-[#1B4332]",
-    border: "border-[#CDE2D6]",
-    accent: "text-forest",
-    watermarkColor: "rgba(27, 67, 50, 0.08)",
-    patternStroke: "rgba(27, 67, 50, 0.07)",
+    bg: "bg-[#EFF6F2] dark:bg-[#0A2016]",
+    text: "text-[#1B4332] dark:text-[#6EE7B7]",
+    border: "border-[#CDE2D6] dark:border-[#144A32]",
+    accent: "text-forest dark:text-emerald-400",
+    watermarkColor: "currentColor",
+    patternStroke: "currentColor",
   },
   h2skill: {
     name: "H2Skill",
-    bg: "bg-[#F3F1EE]",
-    text: "text-[#282522]",
-    border: "border-[#DAD5CC]",
+    bg: "bg-[#F3F1EE] dark:bg-[#1A1815]",
+    text: "text-[#282522] dark:text-[#E6E2D8]",
+    border: "border-[#DAD5CC] dark:border-[#2F2B25]",
     accent: "text-ink",
-    watermarkColor: "rgba(40, 37, 34, 0.08)",
-    patternStroke: "rgba(40, 37, 34, 0.07)",
+    watermarkColor: "currentColor",
+    patternStroke: "currentColor",
   },
   hack2skill: {
     name: "Hack2Skill",
-    bg: "bg-[#F3F1EE]",
-    text: "text-[#282522]",
-    border: "border-[#DAD5CC]",
+    bg: "bg-[#F3F1EE] dark:bg-[#1A1815]",
+    text: "text-[#282522] dark:text-[#E6E2D8]",
+    border: "border-[#DAD5CC] dark:border-[#2F2B25]",
     accent: "text-ink",
-    watermarkColor: "rgba(40, 37, 34, 0.08)",
-    patternStroke: "rgba(40, 37, 34, 0.07)",
+    watermarkColor: "currentColor",
+    patternStroke: "currentColor",
   },
 }
 
@@ -146,6 +146,7 @@ export default function CoverFallback({
                 d={`M ${isHero ? "32" : "16"} 0 L 0 ${isHero ? "32" : "16"}`}
                 fill="none"
                 stroke={theme.patternStroke}
+                strokeOpacity="0.1"
                 strokeWidth="1"
               />
             )}
@@ -155,6 +156,7 @@ export default function CoverFallback({
                 d={`M ${isHero ? "32" : "16"} 0 L 0 0 0 ${isHero ? "32" : "16"}`}
                 fill="none"
                 stroke={theme.patternStroke}
+                strokeOpacity="0.1"
                 strokeWidth="0.75"
               />
             )}
@@ -164,6 +166,7 @@ export default function CoverFallback({
                 d={`M 0 ${isHero ? "16" : "8"} L ${isHero ? "32" : "16"} ${isHero ? "16" : "8"}`}
                 fill="none"
                 stroke={theme.patternStroke}
+                strokeOpacity="0.1"
                 strokeWidth="0.75"
               />
             )}
@@ -173,12 +176,11 @@ export default function CoverFallback({
       </svg>
 
       {/* Large Watermark Typography in Fraunces Serif */}
-      <div className="absolute inset-0 flex items-center justify-center overflow-hidden pointer-events-none">
+      <div className="absolute inset-0 flex items-center justify-center overflow-hidden pointer-events-none opacity-10 dark:opacity-15">
         <span
           className="font-serif font-bold uppercase tracking-widest whitespace-nowrap select-none"
           style={{
             fontSize: isHero ? "clamp(3rem, 12vw, 9rem)" : "clamp(1.4rem, 4vw, 2.2rem)",
-            color: theme.watermarkColor,
             letterSpacing: isHero ? "0.18em" : "0.08em",
             transform: isHero ? "rotate(-3deg)" : "rotate(-5deg)",
           }}
@@ -191,7 +193,7 @@ export default function CoverFallback({
       <div className="relative z-10 flex items-center justify-between p-2 sm:p-3">
         <div className="flex items-center gap-1.5">
           <span
-            className={`font-mono text-[9px] sm:text-[10px] uppercase font-bold tracking-wider px-1.5 py-0.5 rounded-sm bg-white/70 backdrop-blur-xs border border-current/10 ${theme.text}`}
+            className={`font-mono text-[9px] sm:text-[10px] uppercase font-bold tracking-wider px-1.5 py-0.5 rounded-sm bg-white/80 dark:bg-paper-subtle/90 backdrop-blur-xs border border-current/10 ${theme.text}`}
           >
             {theme.name}
           </span>

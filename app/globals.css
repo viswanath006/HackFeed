@@ -12,9 +12,30 @@
   --color-ink-faint:    #9C978D;
   --color-signal:       #FF4B1F;
   --color-signal-hover: #E03E15;
+  --color-signal-faint: #FFF2EE;
   --color-forest:       #1B4332;
   --color-forest-light: #2D6A4F;
+  --color-forest-faint: #EFF6F2;
   --color-border:       #D4CFC4;
+  --color-border-dark:  #B8B1A2;
+}
+
+.dark,
+[data-theme="dark"] {
+  --color-paper:        #12110F;
+  --color-paper-muted:  #1B1916;
+  --color-paper-subtle: #24221E;
+  --color-ink:          #F5F2EB;
+  --color-ink-muted:    #A6A196;
+  --color-ink-faint:    #6B665E;
+  --color-signal:       #FF5E36;
+  --color-signal-hover: #FF7552;
+  --color-signal-faint: #2E140C;
+  --color-forest:       #34D399;
+  --color-forest-light: #6EE7B7;
+  --color-forest-faint: #05281D;
+  --color-border:       #2B2824;
+  --color-border-dark:  #3D3832;
 }
 
 /* ── Base ──────────────────────────────────────────────────── */

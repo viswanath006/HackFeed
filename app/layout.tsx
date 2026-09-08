@@ -10,6 +10,7 @@ import { Fraunces, Inter } from "next/font/google"
 import "./globals.css"
 import Navbar from "@/components/Navbar"
 import { ToastProvider } from "@/components/Toast"
+import { ThemeProvider } from "@/components/ThemeProvider"
 
 const serifFont = Fraunces({
   subsets: ["latin"],
@@ -38,14 +39,37 @@ export const metadata: Metadata = {
   },
 }
 
+const themeScript = `
+  (function() {
+    try {
+      var stored = localStorage.getItem('hackfeed-theme');
+      var prefersDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
+      if (stored === 'dark' || (!stored && prefersDark)) {
+        document.documentElement.classList.add('dark');
+        document.documentElement.setAttribute('data-theme', 'dark');
+        document.documentElement.style.colorScheme = 'dark';
+      } else {
+        document.documentElement.classList.remove('dark');
+        document.documentElement.setAttribute('data-theme', 'light');
+        document.documentElement.style.colorScheme = 'light';
+      }
+    } catch (e) {}
+  })();
+`
+
 export default function RootLayout({ children }: { children: React.ReactNode }) {
   return (
-    <html lang="en" className={`${serifFont.variable} ${sansFont.variable} font-sans`}>
-      <body className="min-h-screen bg-paper text-ink font-sans antialiased selection:bg-signal/20 selection:text-ink">
-        <ToastProvider>
-          <Navbar />
-          {children}
-        </ToastProvider>
+    <html lang="en" suppressHydrationWarning className={`${serifFont.variable} ${sansFont.variable} font-sans`}>
+      <head>
+        <script dangerouslySetInnerHTML={{ __html: themeScript }} />
+      </head>
+      <body className="min-h-screen bg-paper text-ink font-sans antialiased selection:bg-signal/20 selection:text-ink transition-colors duration-200">
+        <ThemeProvider>
+          <ToastProvider>
+            <Navbar />
+            {children}
+          </ToastProvider>
+        </ThemeProvider>
       </body>
     </html>
   )
