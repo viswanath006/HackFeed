@@ -222,3 +222,19 @@ If a direct scraper encounters an error mid-run, it logs the failure to `scrape_
 
 - **Deduplication**: Keyed on unique `source_url`. If a listing already exists, it is checked for changes in deadline, prize pool, stipend, or description. If changed, `updated_at` is updated; otherwise, redundant writes are skipped.
 - **Audit Logging**: Every execution logs a row in the `scrape_logs` table (`source_platform`, `status`, `items_scraped`, `items_added`, `items_updated`, `error_message`, `run_at`).
+
+---
+
+## 🖼️ Original Cover Image Extraction & Validation
+
+Each scraper module (`unstop.py`, `devfolio.py`, `hackerearth.py`, `h2skill.py`) extracts the opportunity's original cover/banner image following a strict priority hierarchy:
+
+1. **Dedicated Banner/Cover Elements**: Inspects platform-specific cover and banner elements (e.g., `header img`, `.banner-section img`, `.cover-image img`, `img.banner-img`, `.event-banner img`) or direct high-resolution banner paths from platform APIs (e.g., Unstop competition detail API, Devfolio `cover_img`).
+2. **Open Graph / Twitter Fallback**: If no explicit banner element is present, falls back to `<meta property="og:image" content="...">` or `<meta name="twitter:image" content="...">`. These are reliable across almost all platforms because they are used for social share previews and reflect the authentic, on-brand cover image for that specific listing.
+3. **HTTP HEAD Request Validation**: Every candidate URL is validated via an HTTP `HEAD` request (verifying `status_code < 400` and `Content-Type` starting with `image/*`, with graceful stream fallback if servers reject HEAD). If validation fails or the link is broken, `banner_image_url` is left as `None` to prevent broken images from rendering on the client.
+4. **Direct Linking (No Hotlink Caching)**: Source image URLs are stored directly in the `banner_image_url` field, allowing the client browser to load them directly from the original platform.
+
+> [!NOTE]
+> **Future Improvement — Supabase Storage Re-hosting**:
+> If hotlinking ever becomes unreliable because platforms enforce stricter cross-origin image loading policies (CORP/CORS) or anti-hotlinking headers, the next step is to asynchronously download validated cover images and re-host them via **Supabase Storage** (e.g., an `opportunity-banners` public bucket). This is flagged as a future enhancement.
+

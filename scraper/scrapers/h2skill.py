@@ -131,20 +131,39 @@ class H2SkillScraper(BaseScraper):
         end_date = raw.get("registrationEnd") or raw.get("endDate") or raw.get("end_date")
         deadline = end_date
 
-        # Banner image / Official Poster
-        thumbnail = (
+        # Banner image / Official Cover
+        # 1. Check direct banner/thumbnail in H2Skill API payload
+        candidate_banner = (
             raw.get("thumbnail") or
             raw.get("eventBanner") or
             raw.get("banner") or
-            raw.get("eventLogo") or
             raw.get("image") or
+            raw.get("eventLogo") or
             raw.get("logo")
         )
-        if thumbnail and isinstance(thumbnail, str):
-            if thumbnail.startswith("//"):
-                thumbnail = f"https:{thumbnail}"
-            elif not thumbnail.startswith("http"):
-                thumbnail = f"https://cdn.hack2skill.com/{thumbnail.lstrip('/')}"
+        if candidate_banner and isinstance(candidate_banner, str):
+            if candidate_banner.startswith("//"):
+                candidate_banner = f"https:{candidate_banner}"
+            elif not candidate_banner.startswith("http"):
+                candidate_banner = f"https://cdn.hack2skill.com/{candidate_banner.lstrip('/')}"
+
+        # 2. Extract from detail page if candidate missing (dedicated banner elements -> og:image fallback)
+        banner_url = None
+        if candidate_banner and candidate_banner.startswith("http"):
+            banner_url = candidate_banner
+        else:
+            banner_url = self.fetch_cover_image_from_page(
+                source_url,
+                selectors=[
+                    ".event-banner img",
+                    "img[src*='banner']",
+                    "img[src*='homepage']",
+                    "header img",
+                    "img[alt*='banner' i]",
+                    "img[alt*='cover' i]"
+                ],
+                fallback_url=candidate_banner
+            )
 
         return self.normalize_opportunity(
             title=title,
@@ -160,7 +179,7 @@ class H2SkillScraper(BaseScraper):
             application_deadline=deadline,
             tags=tags,
             team_size=team_size,
-            banner_image_url=thumbnail,
+            banner_image_url=banner_url,
             is_active=True
         )
 
@@ -192,7 +211,19 @@ class H2SkillScraper(BaseScraper):
                     continue
 
                 img_el = card.find("img")
-                banner = img_el.get("src") if img_el else None
+                card_thumb = img_el.get("src") if img_el else None
+                banner = self.fetch_cover_image_from_page(
+                    full_url,
+                    selectors=[
+                        ".event-banner img",
+                        "img[src*='banner']",
+                        "img[src*='homepage']",
+                        "header img",
+                        "img[alt*='banner' i]",
+                        "img[alt*='cover' i]"
+                    ],
+                    fallback_url=card_thumb
+                )
 
                 items.append(self.normalize_opportunity(
                     title=title,

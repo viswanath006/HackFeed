@@ -112,16 +112,33 @@ class DevfolioScraper(BaseScraper):
         if isinstance(tags, list):
             tags = [t if isinstance(t, str) else t.get("name", "") for t in tags]
 
-        # Banner image / Official Poster
+        # Banner image / Official Cover
+        # 1. Check direct cover_img / hero_image in Devfolio API payload
         hackathon_setting = raw.get("hackathon_setting", {}) if isinstance(raw.get("hackathon_setting"), dict) else {}
-        banner_url = (
+        candidate_cover = (
             raw.get("cover_img") or
-            hackathon_setting.get("logo") or
             raw.get("hero_image") or
             raw.get("banner_image") or
-            raw.get("cover_image") or
-            raw.get("logo")
+            raw.get("cover_image")
         )
+
+        # 2. If candidate is missing or relative, check detail page HTML (dedicated cover element -> og:image)
+        banner_url = None
+        if candidate_cover and isinstance(candidate_cover, str) and candidate_cover.startswith("http"):
+            banner_url = candidate_cover
+        else:
+            banner_url = self.fetch_cover_image_from_page(
+                source_url,
+                selectors=[
+                    "header img",
+                    "img[src*='cover']",
+                    "img[src*='banner']",
+                    ".cover-image img",
+                    "img[alt*='cover' i]",
+                    "img[alt*='banner' i]"
+                ],
+                fallback_url=candidate_cover or hackathon_setting.get("logo") or raw.get("logo")
+            )
 
         return self.normalize_opportunity(
             title=name,
@@ -164,7 +181,19 @@ class DevfolioScraper(BaseScraper):
                     continue
 
                 img_el = card.find("img")
-                banner = img_el.get("src") if img_el else None
+                card_thumb = img_el.get("src") if img_el else None
+                banner = self.fetch_cover_image_from_page(
+                    href,
+                    selectors=[
+                        "header img",
+                        "img[src*='cover']",
+                        "img[src*='banner']",
+                        ".cover-image img",
+                        "img[alt*='cover' i]",
+                        "img[alt*='banner' i]"
+                    ],
+                    fallback_url=card_thumb
+                )
 
                 items.append(self.normalize_opportunity(
                     title=title,

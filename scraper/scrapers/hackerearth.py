@@ -144,8 +144,33 @@ class HackerEarthScraper(BaseScraper):
             elif isinstance(skills, str):
                 tags.extend([s.strip() for s in skills.split(",")])
 
-        # Banner image / Official Poster
-        banner_url = raw.get("thumbnail") or raw.get("cover_image") or raw.get("listing_image") or raw.get("image_url")
+        # Banner image / Official Cover
+        # 1. First check candidate fields in API response
+        candidate_banner = (
+            raw.get("cover_image") or
+            raw.get("listing_image") or
+            raw.get("thumbnail") or
+            raw.get("image_url")
+        )
+
+        # 2. Extract from detail page (dedicated banner/cover element -> og:image fallback)
+        banner_url = None
+        if candidate_banner and isinstance(candidate_banner, str) and candidate_banner.startswith("http"):
+            banner_url = candidate_banner
+        else:
+            banner_url = self.fetch_cover_image_from_page(
+                source_url,
+                selectors=[
+                    ".cover-image img",
+                    "img.event-image",
+                    ".challenge-cover img",
+                    ".banner-image img",
+                    "header img",
+                    "img[alt*='banner' i]",
+                    "img[alt*='cover' i]"
+                ],
+                fallback_url=candidate_banner
+            )
 
         return self.normalize_opportunity(
             title=title,
@@ -191,7 +216,20 @@ class HackerEarthScraper(BaseScraper):
                     href = f"https://www.hackerearth.com{href if href.startswith('/') else '/' + href}"
 
                 img_el = card.select_one("img")
-                banner = img_el.get("src") if img_el else None
+                card_thumb = img_el.get("src") if img_el else None
+                banner = self.fetch_cover_image_from_page(
+                    href,
+                    selectors=[
+                        ".cover-image img",
+                        "img.event-image",
+                        ".challenge-cover img",
+                        ".banner-image img",
+                        "header img",
+                        "img[alt*='banner' i]",
+                        "img[alt*='cover' i]"
+                    ],
+                    fallback_url=card_thumb
+                )
 
                 items.append(self.normalize_opportunity(
                     title=title,
@@ -223,6 +261,7 @@ class HackerEarthScraper(BaseScraper):
                 "prize_pool": "₹1,50,000 + Swags",
                 "tags": ["AI/ML", "GitHub", "Open Source", "Developer Tools"],
                 "mode": "online",
+                "banner_image_url": "https://findmyrepovalue.hackerearth.com/og-image.png"
             },
             {
                 "title": "Yuva Yodha Energy Tech Hackathon",
@@ -235,6 +274,7 @@ class HackerEarthScraper(BaseScraper):
                 "prize_pool": "₹3,00,000 + Pre-Placement Interviews",
                 "tags": ["CleanTech", "IoT", "Smart Energy", "Sustainability"],
                 "mode": "hybrid",
+                "banner_image_url": "https://static.wixstatic.com/media/0384b3_bf77d69958bf457f9c6bc2b384f47911%7Emv2.png/v1/fit/w_2500,h_1330,al_c/0384b3_bf77d69958bf457f9c6bc2b384f47911%7Emv2.png"
             },
             {
                 "title": "Code Kitchen — Applied Algorithms Challenge",
@@ -247,6 +287,7 @@ class HackerEarthScraper(BaseScraper):
                 "prize_pool": "₹75,000",
                 "tags": ["Algorithms", "Data Structures", "Competitive Programming"],
                 "mode": "online",
+                "banner_image_url": "https://pub-bb2e103a32db4e198524a2e9ed8f35b4.r2.dev/dd858dcd-2d23-4eef-b0c9-4d3844517ff9/id-preview-784eeedc--dd32a4e2-91c4-448d-b146-16d3e49c1811.lovable.app-1780418532035.png"
             },
             {
                 "title": "Juspay Hiring Challenge 2026",
@@ -259,6 +300,7 @@ class HackerEarthScraper(BaseScraper):
                 "stipend": "₹40,000/mo (Full-time: ₹27 LPA)",
                 "tags": ["Haskell", "PureScript", "Distributed Systems", "FinTech"],
                 "mode": "online",
+                "banner_image_url": "https://media.hackerearth.com/media/hackathon/juspay-hiring-challenge-2026/images/875975e7a7-juspay_2.png"
             },
             {
                 "title": "HCLTech Java Engineering Hiring Challenge",
@@ -271,6 +313,7 @@ class HackerEarthScraper(BaseScraper):
                 "stipend": "₹35,000/mo (Full-time: 12-18 LPA)",
                 "tags": ["Java", "Spring Boot", "Microservices", "Cloud"],
                 "mode": "online",
+                "banner_image_url": "https://media.hackerearth.com/media/hackathon/hcltech-java-challenge-2027/images/27151614a8-banner_hcl_hiring.png"
             },
             {
                 "title": "HCLTech GCP Data Engineer Hiring Challenge",
@@ -283,6 +326,7 @@ class HackerEarthScraper(BaseScraper):
                 "stipend": "₹35,000/mo (Full-time: 14-22 LPA)",
                 "tags": ["GCP", "BigQuery", "Data Engineering", "Python"],
                 "mode": "online",
+                "banner_image_url": "https://media.hackerearth.com/media/hackathon/hcltech-gcp-data-engineer-hiring-challenge/images/4a72cc3ca87111f1.png"
             },
         ]
 
@@ -303,6 +347,7 @@ class HackerEarthScraper(BaseScraper):
                     prize_pool=v.get("prize_pool"),
                     stipend=v.get("stipend"),
                     tags=v.get("tags"),
+                    banner_image_url=v.get("banner_image_url"),
                     is_active=True,
                 )
             )

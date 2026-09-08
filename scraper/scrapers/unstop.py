@@ -137,48 +137,55 @@ class UnstopScraper(BaseScraper):
         else:
             organizer = org_data or raw.get("author", {}).get("name") or "Unstop"
 
-        # Banner image / Official Poster
-        # Search API gives logoUrl2 (150x150 thumbnail). The detail API (/api/public/competition/{id})
-        # has banner.path -> full-size banner hosted on CloudFront.
+        # Banner image / Official Cover
+        # 1. First check competition detail API for full-size banner (hosted on CloudFront)
         opp_id = raw.get("id")
         banner_url = None
 
-        # Try to get full-size banner from competition detail API
         if opp_id:
             try:
                 detail_resp = self.client.get(
                     f"https://unstop.com/api/public/competition/{opp_id}",
-                    headers={"Accept": "application/json", "Referer": "https://unstop.com/hackathons"}
+                    headers={"Accept": "application/json", "Referer": "https://unstop.com/hackathons"},
+                    timeout=2.5
                 )
                 if detail_resp.status_code == 200:
                     competition = detail_resp.json().get("data", {}).get("competition", {})
-                    # banner has id + path
                     banner_obj = competition.get("banner") or {}
                     banner_mobile_obj = competition.get("banner_mobile") or {}
-                    if isinstance(banner_obj, dict) and banner_obj.get("path"):
-                        banner_url = f"https://d8it4huxumps7.cloudfront.net/{banner_obj['path'].lstrip('/')}"
-                    elif isinstance(banner_mobile_obj, dict) and banner_mobile_obj.get("path"):
-                        banner_url = f"https://d8it4huxumps7.cloudfront.net/{banner_mobile_obj['path'].lstrip('/')}"
+                    if isinstance(banner_obj, dict):
+                        banner_url = banner_obj.get("image_url") or (f"https://d8it4huxumps7.cloudfront.net/{banner_obj['path'].lstrip('/')}" if banner_obj.get("path") else None)
+                    if not banner_url and isinstance(banner_mobile_obj, dict):
+                        banner_url = banner_mobile_obj.get("image_url") or (f"https://d8it4huxumps7.cloudfront.net/{banner_mobile_obj['path'].lstrip('/')}" if banner_mobile_obj.get("path") else None)
             except Exception:
                 pass
 
-        # Fallback to logoUrl2 (150x150 org logo)
+        # 2. If still no banner, fall back to detail page HTML extraction (dedicated banner selector -> og:image)
+        if not banner_url and source_url and source_url.startswith("http"):
+            banner_url = self.fetch_cover_image_from_page(
+                source_url,
+                selectors=[".banner-section img", "img.banner-img", ".banner-image img", "img.banner", ".cover-image img"]
+            )
+
+        # 3. Fallback to payload fields if still missing
         if not banner_url:
             _banner_mobile = raw.get("banner_mobile")
             _banner_dict = raw.get("banner")
-            banner_url = (
+            candidate = (
+                (_banner_dict.get("image_url") or _banner_dict.get("url") if isinstance(_banner_dict, dict) else None) or
+                (_banner_mobile.get("image_url") or _banner_mobile.get("url") if isinstance(_banner_mobile, dict) else None) or
+                raw.get("banner_url") or
+                raw.get("banner_image") or
                 raw.get("logoUrl2") or
-                (_banner_mobile.get("url") if isinstance(_banner_mobile, dict) else None) or
-                (_banner_dict.get("url") if isinstance(_banner_dict, dict) else None) or
-                raw.get("logo_url") or
-                raw.get("thumb") or
-                raw.get("banner_url")
+                raw.get("logo_url")
             )
-            if banner_url and isinstance(banner_url, str):
-                if banner_url.startswith("//"):
-                    banner_url = f"https:{banner_url}"
-                elif not banner_url.startswith("http"):
-                    banner_url = f"https://d8it4huxumps7.cloudfront.net/{banner_url.lstrip('/')}"
+            if candidate and isinstance(candidate, str):
+                if candidate.startswith("//"):
+                    banner_url = f"https:{candidate}"
+                elif not candidate.startswith("http"):
+                    banner_url = f"https://d8it4huxumps7.cloudfront.net/{candidate.lstrip('/')}"
+                else:
+                    banner_url = candidate
 
         # Dates & Deadlines
         regn_req = raw.get("regnRequirements", {}) if isinstance(raw.get("regnRequirements"), dict) else {}
@@ -301,7 +308,12 @@ class UnstopScraper(BaseScraper):
                 organizer = org_el.get_text(strip=True) if org_el else "Unstop"
 
                 img_el = card.select_one("img")
-                banner = img_el.get("src") if img_el else None
+                card_thumb = img_el.get("src") if img_el else None
+                banner = self.fetch_cover_image_from_page(
+                    full_url,
+                    selectors=[".banner-section img", "img.banner-img", ".banner-image img", "img.banner", ".cover-image img"],
+                    fallback_url=card_thumb
+                )
 
                 items.append(self.normalize_opportunity(
                     title=title,
