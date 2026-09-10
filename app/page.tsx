@@ -20,7 +20,7 @@ import CourseCard from "@/components/CourseCard"
 import RecommendedSection from "@/components/RecommendedSection"
 import HeroVideoBackground from "@/components/HeroVideoBackground"
 import type { OpportunityRow, UserPreferencesRow, CourseRow } from "@/lib/supabase/types"
-import { MOCK_OPPORTUNITIES } from "@/lib/mockData"
+import { MOCK_OPPORTUNITIES, MOCK_COURSES } from "@/lib/mockData"
 
 export const dynamic = "force-dynamic"
 
@@ -136,6 +136,9 @@ export default async function HomePage() {
   }
   if (internshipCount === 0) {
     internshipCount = MOCK_OPPORTUNITIES.filter((op) => op.type === "internship").length
+  }
+  if (featuredCourses.length === 0) {
+    featuredCourses = MOCK_COURSES.filter((c) => c.is_featured).slice(0, 6)
   }
 
   // Personalized recommendations

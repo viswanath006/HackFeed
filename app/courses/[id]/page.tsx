@@ -15,6 +15,7 @@ import TagChip from "@/components/TagChip"
 import CourseDetailClient from "./CourseDetailClient"
 import type { CourseRow } from "@/lib/supabase/types"
 import { sanitizeExternalUrl } from "@/lib/utils"
+import { MOCK_COURSES } from "@/lib/mockData"
 
 export const dynamic = "force-dynamic"
 
@@ -38,6 +39,11 @@ export async function generateMetadata({
         .single()
       data = record as Partial<CourseRow> | null
     } catch { /* fallback */ }
+  }
+
+  if (!data || !data.title) {
+    const fallbackCourse = MOCK_COURSES.find((c) => c.id === id)
+    if (fallbackCourse) data = fallbackCourse
   }
 
   if (!data || !data.title) return { title: "Course not found — HackFeed" }
@@ -110,6 +116,10 @@ export default async function CourseDetailPage({
     } catch (err) {
       console.warn("CourseDetailPage Supabase query notice:", err)
     }
+  }
+
+  if (!course) {
+    course = MOCK_COURSES.find((c) => c.id === id) ?? null
   }
 
   if (!course) notFound()

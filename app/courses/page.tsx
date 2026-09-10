@@ -13,6 +13,7 @@ import { getUser } from "@/lib/supabase/getUser"
 import { isSupabaseConfigured } from "@/lib/supabase/env"
 import CoursesFeedClient from "./CoursesFeedClient"
 import type { CourseRow } from "@/lib/supabase/types"
+import { MOCK_COURSES } from "@/lib/mockData"
 
 export const dynamic = "force-dynamic"
 
@@ -96,6 +97,34 @@ export default async function CoursesPage({
     } catch (err) {
       console.warn("CoursesPage Supabase query notice:", err)
     }
+  }
+
+  // Seamless fallback to seed dataset if Supabase is unpopulated or returns empty
+  if (courses.length === 0) {
+    let dataset = [...MOCK_COURSES]
+    if (domain) {
+      dataset = dataset.filter((item) => item.domain.toLowerCase() === domain.toLowerCase())
+    }
+    if (priceType) {
+      dataset = dataset.filter((item) => item.price_type === priceType)
+    }
+    if (level) {
+      dataset = dataset.filter((item) => item.level === level)
+    }
+    if (provider) {
+      dataset = dataset.filter((item) => item.provider.toLowerCase().includes(provider.toLowerCase()))
+    }
+    if (q) {
+      const qLower = q.toLowerCase()
+      dataset = dataset.filter((item) =>
+        item.title.toLowerCase().includes(qLower) ||
+        item.provider.toLowerCase().includes(qLower) ||
+        (item.description && item.description.toLowerCase().includes(qLower)) ||
+        (item.tags && item.tags.some((t) => t.toLowerCase().includes(qLower)))
+      )
+    }
+    totalCount = dataset.length
+    courses = dataset.slice(offset, offset + pageSize)
   }
 
   return (
