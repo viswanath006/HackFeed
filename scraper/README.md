@@ -1,6 +1,8 @@
 # HackFeed Scraper Microservice
 
-A standalone Python microservice that autonomously scrapes and synchronizes hackathon and internship opportunities from **Unstop**, **Devfolio**, **HackerEarth**, and **H2Skill (Hack2skill)** into the HackFeed Supabase database.
+A standalone Python microservice that autonomously scrapes and synchronizes:
+1. **Hackathons & Internships** from **Unstop**, **Devfolio**, **HackerEarth**, and **H2Skill (Hack2skill)** into the HackFeed `opportunities` table.
+2. **Courses & Certifications** from **Coursera**, **freeCodeCamp**, **NPTEL (SWAYAM)**, and **Udemy** into the HackFeed `courses` table.
 
 ---
 
@@ -9,20 +11,25 @@ A standalone Python microservice that autonomously scrapes and synchronizes hack
 ```
 scraper/
 ├── config.py                  # Global settings (Supabase, timeouts, Apify token)
-├── db.py                      # Database client with deduplication & scrape_logs audit
+├── db.py                      # Database client (opportunities & courses upsert + scrape_logs audit)
 ├── main.py                    # Orchestrator (CLI + FastAPI + APScheduler)
 ├── requirements.txt           # Python dependencies
 ├── .env.example               # Config template (including APIFY_API_TOKEN)
 ├── README.md                  # Complete documentation & operational guide
 └── scrapers/
-    ├── __init__.py            # Registry exporting scrapers & factory function
-    ├── base.py                # BaseScraper class (.scrape() -> list[dict]), normalization, rate limiting
+    ├── __init__.py            # Registry exporting scrapers & factory functions
+    ├── base.py                # BaseScraper (.scrape() -> list[dict]), opportunity & course normalizers
     ├── config.py              # Platform routing config ('direct' vs 'apify') & Actor mappings
+    ├── course_utils.py        # Shared course utilities (domain keyword mapper, level inferrer)
     ├── unstop.py              # Dedicated Unstop scraper (API + HTML fallback)
     ├── devfolio.py            # Dedicated Devfolio scraper (API + HTML fallback)
     ├── hackerearth.py         # Dedicated HackerEarth scraper (API + HTML fallback)
     ├── h2skill.py             # Dedicated H2Skill scraper (API + HTML fallback)
-    └── apify_fallback.py      # Generic Apify fallback layer (Actor runner + normalizer)
+    ├── apify_fallback.py      # Generic Apify fallback layer (Actor runner + normalizer)
+    ├── coursera.py            # Coursera scraper (Public Catalog API courses.v1)
+    ├── freecodecamp.py        # freeCodeCamp scraper (Curriculum / verified certifications)
+    ├── nptel.py               # NPTEL scraper (IIT / Swayam computer science courses)
+    └── udemy.py               # Udemy scraper (Apify route + documented gap)
 ```
 
 ---
@@ -71,12 +78,13 @@ APIFY_API_TOKEN=your-apify-api-token-here
 
 ### Option A: Run Manually via CLI
 
-Run all platforms (Unstop, Devfolio, HackerEarth, H2Skill):
+#### Opportunities Scraping:
+Run all opportunity platforms (Unstop, Devfolio, HackerEarth, H2Skill):
 ```bash
 python main.py
 ```
 
-Run a specific platform only:
+Run a specific opportunity platform only:
 ```bash
 python main.py --platform unstop
 python main.py --platform devfolio
@@ -84,18 +92,73 @@ python main.py --platform hackerearth
 python main.py --platform h2skill
 ```
 
+#### Courses & Certifications Scraping:
+Run all course platforms (Coursera, freeCodeCamp, NPTEL, Udemy):
+```bash
+python main.py --courses
+```
+
+Run a specific course platform only:
+```bash
+python main.py --courses --platform coursera
+python main.py --courses --platform freecodecamp
+python main.py --courses --platform nptel
+python main.py --courses --platform udemy
+```
+*(Or simply `python main.py --platform coursera` — the CLI routes automatically)*
+
 ### Option B: Run as a FastAPI Service with APScheduler
 
-Starts an HTTP API server on port 8000 and automatically schedules a scrape every 6 hours (configurable via `SCRAPE_INTERVAL_HOURS`):
+Starts an HTTP API server on port 8000 and automatically schedules:
+- **Opportunities scrape**: every 6 hours (configurable via `SCRAPE_INTERVAL_HOURS`)
+- **Hourly deadline reminders**: every hour at minute 0
+- **Weekly newsletter digest**: every Monday at 09:00 UTC
+- **Weekly course scraper**: every Sunday at 00:00 UTC
 
 ```bash
 python main.py --serve
 ```
 
 #### REST Endpoints:
-- `GET /health` — Check service health and supported platforms.
-- `POST /scrape` — Trigger an immediate background scrape of all platforms.
+- `GET /health` — Check service health and supported opportunity + course platforms.
+- `POST /scrape` — Trigger an immediate background scrape of all opportunity platforms.
 - `POST /scrape/{platform}` — Trigger a background scrape for a specific platform (`unstop`, `devfolio`, `hackerearth`, `h2skill`).
+- `POST /scrape/courses` — Trigger an immediate background scrape of all course platforms.
+- `POST /scrape/courses/{platform}` — Trigger a background scrape for a specific course platform (`coursera`, `freecodecamp`, `nptel`, `udemy`).
+- `POST /reminders` — Trigger deadline reminders dispatch.
+- `POST /digest` — Trigger weekly digest newsletter dispatch.
+
+---
+
+## 🎓 Course Scrapers & Controlled Schema
+
+Course scrapers conform strictly to the HackFeed `courses` Postgres table:
+
+| Column | Type / Constraint | Description |
+|---|---|---|
+| `title` | `TEXT NOT NULL` | Name of the course or certification |
+| `description` | `TEXT` | Syllabus / course description |
+| `provider` | `TEXT NOT NULL` | Platform (e.g. `'Coursera'`, `'freeCodeCamp'`, `'NPTEL'`, `'Udemy'`) |
+| `domain` | `TEXT NOT NULL` | Controlled list: `Web Development`, `AI/ML`, `Cloud Computing`, `DSA`, `Cybersecurity`, `Data Science` |
+| `level` | `course_level` | `'beginner'`, `'intermediate'`, `'advanced'` |
+| `price_type` | `course_price_type` | `'free'`, `'paid'`, `'free_with_paid_certificate'` |
+| `price` | `TEXT` | Price string (`'₹1,000'`, `'$49'`, `null` if free) |
+| `duration` | `TEXT` | Course length (`'~300 hours'`, `'8-12 weeks'`, `'40 hours'`) |
+| `certificate_provided` | `BOOLEAN` | Verified certificate upon completion |
+| `course_url` | `TEXT NOT NULL` | Canonical course link |
+| `rating` | `NUMERIC(3,1)` | Course rating (e.g. `4.8`) |
+| `tags` | `TEXT[]` | Keyword tags array |
+| `is_active` | `BOOLEAN` | Visibility flag |
+| `is_featured` | `BOOLEAN` | Featured spotlight flag |
+
+### Controlled Domain Categorization:
+Courses are mapped deterministically into the 6 controlled domains via `course_utils.py`:
+1. **Web Development**: HTML, CSS, JavaScript, React, Next.js, Node.js, Express, Full Stack.
+2. **AI/ML**: Machine Learning, Deep Learning, Generative AI, Neural Networks, Computer Vision, NLP.
+3. **Cloud Computing**: AWS, Google Cloud, Azure, DevOps, Kubernetes, Docker, Serverless, Terraform.
+4. **DSA**: Data Structures, Algorithms, Problem Solving, Competitive Programming, OOP.
+5. **Cybersecurity**: Information Security, Ethical Hacking, Network Security, Penetration Testing.
+6. **Data Science**: Python for Data, Pandas, NumPy, SQL, Relational Databases, D3.js, Analytics.
 
 ---
 

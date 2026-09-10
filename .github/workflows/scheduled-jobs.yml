@@ -6,8 +6,10 @@ on:
     - cron: '0 * * * *'
     # 2. Weekly newsletter digest (Mondays at 09:00 UTC)
     - cron: '0 9 * * 1'
-    # 3. Scraping every 6 hours
+    # 3. Opportunity scraping every 6 hours
     - cron: '0 */6 * * *'
+    # 4. Weekly course scraping (Sundays at 00:00 UTC)
+    - cron: '0 0 * * 0'
   workflow_dispatch:
     inputs:
       job_type:
@@ -18,6 +20,7 @@ on:
         options:
           - all
           - scrapers
+          - courses
           - reminders
           - digest
 
@@ -77,3 +80,14 @@ jobs:
           SUPABASE_SERVICE_ROLE_KEY: ${{ secrets.SUPABASE_SERVICE_ROLE_KEY }}
           APIFY_API_TOKEN: ${{ secrets.APIFY_API_TOKEN }}
         run: python main.py
+
+      - name: Run Course Scrapers
+        if: github.event.schedule == '0 0 * * 0' || github.event.inputs.job_type == 'courses' || github.event.inputs.job_type == 'all'
+        working-directory: ./scraper
+        env:
+          SUPABASE_URL: ${{ secrets.SUPABASE_URL || secrets.NEXT_PUBLIC_SUPABASE_URL }}
+          NEXT_PUBLIC_SUPABASE_URL: ${{ secrets.NEXT_PUBLIC_SUPABASE_URL || secrets.SUPABASE_URL }}
+          SUPABASE_SERVICE_ROLE_KEY: ${{ secrets.SUPABASE_SERVICE_ROLE_KEY }}
+          APIFY_API_TOKEN: ${{ secrets.APIFY_API_TOKEN }}
+        run: python main.py --courses
+

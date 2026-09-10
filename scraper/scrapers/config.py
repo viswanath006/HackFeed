@@ -48,9 +48,39 @@ APIFY_START_URLS: Dict[str, list] = {
 
 def get_platform_mode(platform_name: str) -> str:
     """Returns 'direct' or 'apify' for a given platform name (case-insensitive)."""
-    return PLATFORM_CONFIG.get(platform_name.lower(), "direct")
+    p_lower = platform_name.lower()
+    if p_lower in COURSE_PLATFORM_CONFIG:
+        return COURSE_PLATFORM_CONFIG[p_lower]
+    return PLATFORM_CONFIG.get(p_lower, "direct")
 
 
 def get_apify_actor(platform_name: str) -> str:
     """Returns the Apify Actor ID for a platform."""
-    return APIFY_ACTORS.get(platform_name.lower(), "apify/web-scraper")
+    p_lower = platform_name.lower()
+    if p_lower in COURSE_APIFY_ACTORS:
+        return COURSE_APIFY_ACTORS[p_lower]
+    return APIFY_ACTORS.get(p_lower, "apify/web-scraper")
+
+
+# ── Course Platforms Configuration ───────────────────────────────────────────
+COURSE_PLATFORM_CONFIG: Dict[str, str] = {
+    "coursera": "direct",       # "direct" via Coursera Catalog API
+    "freecodecamp": "direct",   # "direct" via Curriculum API / Page Data
+    "nptel": "direct",          # "direct" via NPTEL courses catalog
+    "udemy": "apify",           # "apify" via Apify Actor (epctex/udemy-scraper)
+}
+
+COURSE_APIFY_ACTORS: Dict[str, str] = {
+    "udemy": "epctex/udemy-scraper",
+}
+
+
+def get_course_platform_mode(platform_name: str) -> str:
+    """Returns 'direct' or 'apify' for a given course platform name."""
+    return COURSE_PLATFORM_CONFIG.get(platform_name.lower(), "direct")
+
+
+def get_course_apify_actor(platform_name: str) -> str:
+    """Returns the Apify Actor ID for a course platform."""
+    return COURSE_APIFY_ACTORS.get(platform_name.lower(), "epctex/udemy-scraper")
+

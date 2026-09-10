@@ -24,7 +24,10 @@ from db import DatabaseClient
 from scrapers import (
     ALL_PLATFORMS,
     get_scraper_for_platform,
-    get_platform_mode
+    get_platform_mode,
+    ALL_COURSE_PLATFORMS,
+    get_course_scraper_for_platform,
+    get_course_platform_mode,
 )
 from reminder_sender import process_reminders
 from digest_sender import process_weekly_digest
@@ -146,6 +149,111 @@ def run_all_scrapers(target_platform: Optional[str] = None) -> List[Dict[str, An
     return results
 
 
+def run_single_course_scraper(platform_name: str, db: Optional[DatabaseClient]) -> Dict[str, Any]:
+    """
+    Executes a single course scraper with isolated error handling and logging.
+    """
+    mode = get_course_platform_mode(platform_name)
+    print(f"\n[{datetime.now(timezone.utc).strftime('%H:%M:%S')}] >>> Starting course scraper: {platform_name.upper()} (Mode: {mode.upper()})...")
+
+    items_scraped = 0
+    items_added = 0
+    items_updated = 0
+    status = "failed"
+    error_message: Optional[str] = None
+    scraper = None
+
+    try:
+        scraper = get_course_scraper_for_platform(platform_name)
+        display_name = scraper.platform_name
+
+        courses = scraper.scrape()
+        items_scraped = len(courses)
+
+        if items_scraped > 0:
+            if db:
+                added, updated = db.upsert_courses(courses, display_name)
+                items_added = added
+                items_updated = updated
+            else:
+                items_added = items_scraped
+                print(f"[{display_name}] Parsing successful: {items_scraped} courses parsed (DB offline).")
+            status = "success"
+        else:
+            status = "partial"
+            error_message = "Course scraper returned 0 items."
+
+    except Exception as e:
+        status = "failed"
+        error_message = f"{str(e)}\n{traceback.format_exc()}"
+        print(f"[COURSE SCRAPER FAILED] {platform_name}: {e}", file=sys.stderr)
+    finally:
+        if scraper:
+            scraper.close()
+        if db:
+            db.log_scrape_run(
+                source_platform=platform_name.capitalize(),
+                status=status,
+                items_scraped=items_scraped,
+                items_added=items_added,
+                items_updated=items_updated,
+                error_message=error_message
+            )
+
+    return {
+        "platform": platform_name,
+        "mode": mode,
+        "status": status,
+        "items_scraped": items_scraped,
+        "items_added": items_added,
+        "items_updated": items_updated,
+        "error": error_message
+    }
+
+
+def run_all_course_scrapers(target_platform: Optional[str] = None) -> List[Dict[str, Any]]:
+    """
+    Runs all configured course scrapers or a single specified course platform.
+    """
+    has_valid_settings = settings.validate()
+    db: Optional[DatabaseClient] = None
+
+    if has_valid_settings:
+        try:
+            db = DatabaseClient()
+        except Exception as e:
+            print(f"[WARNING] Database initialization failed ({e}). Proceeding in parsing-only mode.", file=sys.stderr)
+    else:
+        print("[WARNING] Supabase credentials not set. Running in offline/dry-run mode.", file=sys.stderr)
+
+    platforms_to_run = ALL_COURSE_PLATFORMS
+    if target_platform:
+        target_clean = target_platform.lower()
+        if target_clean not in ALL_COURSE_PLATFORMS:
+            print(f"[ERROR] Unknown course platform '{target_platform}'. Available: {ALL_COURSE_PLATFORMS}", file=sys.stderr)
+            return []
+        platforms_to_run = [target_clean]
+
+    results = []
+    print(f"============================================================")
+    print(f"  HackFeed Course Scraper Run — {datetime.now(timezone.utc).isoformat()}")
+    print(f"  Running {len(platforms_to_run)} platform(s): {platforms_to_run}")
+    print(f"============================================================")
+
+    for platform_name in platforms_to_run:
+        res = run_single_course_scraper(platform_name, db)
+        results.append(res)
+
+    print("\n============================================================")
+    print("  Course Scrape Run Summary")
+    print("============================================================")
+    for r in results:
+        print(f"  • {r['platform'].capitalize():<14} [{r['mode'].upper():<6}]: {r['status'].upper():<8} | Scraped: {r['items_scraped']:<4} | Added: {r['items_added']:<4} | Updated: {r['items_updated']:<4}")
+    print("============================================================\n")
+
+    return results
+
+
 # ── FastAPI Application & Lifespan ───────────────────────────────────────────
 
 scheduler = BackgroundScheduler()
@@ -186,6 +294,18 @@ async def lifespan(app: FastAPI):
     )
     print("[SCHEDULER] Scheduled weekly newsletter digest for Mondays at 09:00 UTC.")
 
+    # 4. Weekly Course Scraping (every Sunday at 00:00 UTC)
+    scheduler.add_job(
+        run_all_course_scrapers,
+        "cron",
+        day_of_week="sun",
+        hour=0,
+        minute=0,
+        id="weekly_course_scrape_job",
+        replace_existing=True
+    )
+    print("[SCHEDULER] Scheduled weekly course scraper for Sundays at 00:00 UTC.")
+
     scheduler.start()
     yield
 
@@ -196,8 +316,8 @@ async def lifespan(app: FastAPI):
 
 app = FastAPI(
     title="HackFeed Scraper & Engagement Microservice",
-    description="Automated aggregator for hackathons/internships with deadline reminder and newsletter digest dispatchers.",
-    version="1.1.0",
+    description="Automated aggregator for hackathons/internships/courses with deadline reminder and newsletter digest dispatchers.",
+    version="1.2.0",
     lifespan=lifespan
 )
 
@@ -210,13 +330,14 @@ def health_check():
         "service": "hackfeed-scraper",
         "timestamp": datetime.now(timezone.utc).isoformat(),
         "platforms_supported": ALL_PLATFORMS,
+        "course_platforms_supported": ALL_COURSE_PLATFORMS,
         "engagement_features": ["deadline_reminders", "weekly_digest", "calendar_export"]
     }
 
 
 @app.post("/scrape")
 def trigger_scrape_all(background_tasks: BackgroundTasks):
-    """Triggers an immediate background scrape of all supported platforms."""
+    """Triggers an immediate background scrape of all supported opportunity platforms."""
     background_tasks.add_task(run_all_scrapers)
     return {
         "message": "Full scrape job queued in background.",
@@ -227,17 +348,54 @@ def trigger_scrape_all(background_tasks: BackgroundTasks):
 
 @app.post("/scrape/{platform}")
 def trigger_scrape_platform(platform: str, background_tasks: BackgroundTasks):
-    """Triggers a background scrape for a specific platform."""
+    """Triggers a background scrape for a specific opportunity platform."""
     target_clean = platform.lower()
+    if target_clean in ALL_COURSE_PLATFORMS:
+        background_tasks.add_task(run_all_course_scrapers, target_platform=target_clean)
+        return {
+            "message": f"Course scrape job for '{platform}' queued in background.",
+            "status": "queued",
+            "timestamp": datetime.now(timezone.utc).isoformat()
+        }
+
     if target_clean not in ALL_PLATFORMS:
         raise HTTPException(
             status_code=404,
-            detail=f"Platform '{platform}' not found. Available: {ALL_PLATFORMS}"
+            detail=f"Platform '{platform}' not found. Available: {ALL_PLATFORMS + ALL_COURSE_PLATFORMS}"
         )
 
     background_tasks.add_task(run_all_scrapers, target_platform=target_clean)
     return {
         "message": f"Scrape job for '{platform}' queued in background.",
+        "status": "queued",
+        "timestamp": datetime.now(timezone.utc).isoformat()
+    }
+
+
+@app.post("/scrape/courses")
+def trigger_scrape_all_courses(background_tasks: BackgroundTasks):
+    """Triggers an immediate background scrape of all supported course platforms."""
+    background_tasks.add_task(run_all_course_scrapers)
+    return {
+        "message": "Full course scrape job queued in background.",
+        "status": "queued",
+        "timestamp": datetime.now(timezone.utc).isoformat()
+    }
+
+
+@app.post("/scrape/courses/{platform}")
+def trigger_scrape_course_platform(platform: str, background_tasks: BackgroundTasks):
+    """Triggers a background scrape for a specific course platform."""
+    target_clean = platform.lower()
+    if target_clean not in ALL_COURSE_PLATFORMS:
+        raise HTTPException(
+            status_code=404,
+            detail=f"Course platform '{platform}' not found. Available: {ALL_COURSE_PLATFORMS}"
+        )
+
+    background_tasks.add_task(run_all_course_scrapers, target_platform=target_clean)
+    return {
+        "message": f"Course scrape job for '{platform}' queued in background.",
         "status": "queued",
         "timestamp": datetime.now(timezone.utc).isoformat()
     }
@@ -272,7 +430,12 @@ def main():
     parser.add_argument(
         "--platform",
         type=str,
-        help="Run a specific scraper only (e.g. unstop, devfolio, hackerearth, h2skill)"
+        help="Run a specific scraper only (e.g. unstop, devfolio, hackerearth, h2skill, coursera, freecodecamp, nptel, udemy)"
+    )
+    parser.add_argument(
+        "--courses",
+        action="store_true",
+        help="Run course scrapers (Coursera, freeCodeCamp, NPTEL, Udemy)"
     )
     parser.add_argument(
         "--serve",
@@ -319,8 +482,14 @@ def main():
         print(f"[CLI] Running weekly digest dispatcher (Dry Run: {args.dry_run})...")
         count = process_weekly_digest(dry_run=args.dry_run)
         print(f"[CLI] Dispatched {count} digests.")
+    elif args.courses:
+        run_all_course_scrapers(target_platform=args.platform)
     else:
-        run_all_scrapers(target_platform=args.platform)
+        # If specific platform is a course platform, route automatically to course scraper
+        if args.platform and args.platform.lower() in ALL_COURSE_PLATFORMS:
+            run_all_course_scrapers(target_platform=args.platform)
+        else:
+            run_all_scrapers(target_platform=args.platform)
 
 
 if __name__ == "__main__":

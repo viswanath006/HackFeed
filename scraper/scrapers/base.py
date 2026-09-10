@@ -319,10 +319,64 @@ class BaseScraper(ABC):
             "is_featured": is_featured,
         }
 
-        valid_modes = {"online", "offline", "hybrid"}
-        normalized_mode = mode.lower() if mode else self.infer_mode(location, description)
-        if normalized_mode not in valid_modes:
-            normalized_mode = None
+    def normalize_course(
+        self,
+        title: str,
+        course_url: str,
+        provider: str,
+        domain: str,
+        description: Optional[str] = None,
+        level: Optional[str] = None,
+        price_type: str = "free",
+        price: Optional[str] = None,
+        duration: Optional[str] = None,
+        certificate_provided: bool = False,
+        rating: Optional[float] = None,
+        tags: Optional[List[str]] = None,
+        is_active: bool = True,
+        is_featured: bool = False
+    ) -> Dict[str, Any]:
+        """
+        Builds a normalized dictionary conforming to the HackFeed courses schema.
+        """
+        valid_domains = {
+            "Web Development",
+            "AI/ML",
+            "Cloud Computing",
+            "DSA",
+            "Cybersecurity",
+            "Data Science"
+        }
+        valid_levels = {"beginner", "intermediate", "advanced"}
+        valid_price_types = {"free", "paid", "free_with_paid_certificate"}
+
+        norm_domain = domain.strip() if domain else "Web Development"
+        if norm_domain not in valid_domains:
+            # Fallback to closest matching domain or default
+            for vd in valid_domains:
+                if vd.lower() in norm_domain.lower() or norm_domain.lower() in vd.lower():
+                    norm_domain = vd
+                    break
+            else:
+                norm_domain = "Web Development"
+
+        norm_level = level.lower().strip() if level else None
+        if norm_level not in valid_levels:
+            norm_level = None
+
+        norm_price_type = price_type.lower().strip() if price_type else "free"
+        if norm_price_type not in valid_price_types:
+            norm_price_type = "free"
+
+        # Parse and bound rating
+        clean_rating = None
+        if rating is not None:
+            try:
+                r_val = float(rating)
+                if 0.0 <= r_val <= 5.0:
+                    clean_rating = round(r_val, 1)
+            except (ValueError, TypeError):
+                clean_rating = None
 
         # Clean tags list
         clean_tags = []
@@ -332,37 +386,25 @@ class BaseScraper(ABC):
                     c = self.clean_text(t)
                     if c and len(c) < 50:
                         clean_tags.append(c)
-        clean_tags = list(dict.fromkeys(clean_tags))  # deduplicate preserving order
+        clean_tags = list(dict.fromkeys(clean_tags))
 
-        parsed_deadline = self.parse_datetime(application_deadline)
-        effective_is_active = is_active
-        if parsed_deadline:
-            try:
-                dl_dt = datetime.fromisoformat(parsed_deadline.replace("Z", "+00:00"))
-                if dl_dt < datetime.now(timezone.utc):
-                    effective_is_active = False
-            except Exception:
-                pass
+        # Price formatting
+        clean_price = self.clean_text(price) if norm_price_type != "free" else None
 
         return {
-            "title": self.clean_text(title) or "Untitled Opportunity",
+            "title": self.clean_text(title) or "Untitled Course",
             "description": self.clean_text(description),
-            "type": normalized_type,
-            "source_platform": source_platform,
-            "source_url": source_url.strip(),
-            "organizer": self.clean_text(organizer),
-            "location": self.clean_text(location) or ("Online" if normalized_mode == "online" else None),
-            "mode": normalized_mode,
-            "start_date": self.parse_datetime(start_date),
-            "end_date": self.parse_datetime(end_date),
-            "application_deadline": parsed_deadline,
-            "prize_pool": self.clean_text(prize_pool),
-            "stipend": self.clean_text(stipend),
+            "provider": self.clean_text(provider) or "Unknown",
+            "domain": norm_domain,
+            "level": norm_level,
+            "price_type": norm_price_type,
+            "price": clean_price,
+            "duration": self.clean_text(duration),
+            "certificate_provided": bool(certificate_provided),
+            "course_url": course_url.strip(),
+            "rating": clean_rating,
             "tags": clean_tags if clean_tags else None,
-            "eligibility": self.clean_text(eligibility),
-            "team_size": self.clean_text(team_size),
-            "banner_image_url": banner_image_url.strip() if banner_image_url else None,
-            "is_active": effective_is_active,
+            "is_active": is_active,
             "is_featured": is_featured,
         }
 

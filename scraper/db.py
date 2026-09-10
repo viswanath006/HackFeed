@@ -112,6 +112,96 @@ class DatabaseClient:
 
         return added_count, updated_count
 
+    def get_existing_courses(self, provider: str) -> Dict[str, Dict[str, Any]]:
+        """
+        Fetches all existing courses for a given provider.
+        Returns a dictionary mapping `course_url` -> existing record dict.
+        """
+        try:
+            response = self.client.table("courses") \
+                .select("id, course_url, title, provider, domain, level, price_type, price, duration, certificate_provided, rating, tags, is_active, is_featured, updated_at") \
+                .ilike("provider", provider) \
+                .execute()
+            
+            records = response.data or []
+            return {item["course_url"]: item for item in records if item.get("course_url")}
+        except Exception as e:
+            print(f"[DB ERROR] Failed to fetch existing courses for {provider}: {e}")
+            return {}
+
+    def upsert_courses(
+        self,
+        courses: List[Dict[str, Any]],
+        provider: str
+    ) -> Tuple[int, int]:
+        """
+        Deduplicates and upserts normalized courses:
+        - If course_url is not in DB: INSERTS new record (increments added_count).
+        - If course_url is in DB and relevant details changed: UPDATES record (increments updated_count).
+        - If identical: skips.
+
+        Returns (added_count, updated_count).
+        """
+        if not courses:
+            return 0, 0
+
+        existing_map = self.get_existing_courses(provider)
+        added_count = 0
+        updated_count = 0
+        now_iso = datetime.now(timezone.utc).isoformat()
+
+        for crs in courses:
+            course_url = crs.get("course_url")
+            if not course_url:
+                continue
+
+            existing = existing_map.get(course_url)
+
+            if not existing:
+                # INSERT new record
+                try:
+                    payload = {**crs}
+                    if "is_active" not in payload:
+                        payload["is_active"] = True
+                    if "is_featured" not in payload:
+                        payload["is_featured"] = False
+
+                    self.client.table("courses").insert(payload).execute()
+                    added_count += 1
+                except Exception as e:
+                    print(f"[DB INSERT ERROR] Failed to insert course '{crs.get('title')}': {e}")
+            else:
+                # Check for changes in key attributes
+                has_changes = (
+                    (crs.get("title") and crs.get("title") != existing.get("title")) or
+                    (crs.get("description") and crs.get("description") != existing.get("description")) or
+                    (crs.get("domain") and crs.get("domain") != existing.get("domain")) or
+                    (crs.get("level") and crs.get("level") != existing.get("level")) or
+                    (crs.get("price_type") and crs.get("price_type") != existing.get("price_type")) or
+                    (crs.get("price") and crs.get("price") != existing.get("price")) or
+                    (crs.get("duration") and crs.get("duration") != existing.get("duration")) or
+                    (crs.get("rating") is not None and crs.get("rating") != existing.get("rating")) or
+                    (crs.get("certificate_provided") is not None and crs.get("certificate_provided") != existing.get("certificate_provided"))
+                )
+
+                if has_changes:
+                    try:
+                        update_payload = {
+                            **crs,
+                            "updated_at": now_iso
+                        }
+                        update_payload.pop("id", None)
+
+                        self.client.table("courses") \
+                            .update(update_payload) \
+                            .eq("id", existing["id"]) \
+                            .execute()
+                        updated_count += 1
+                    except Exception as e:
+                        print(f"[DB UPDATE ERROR] Failed to update course '{crs.get('title')}': {e}")
+
+        return added_count, updated_count
+
     def log_scrape_run(
         self,
         source_platform: str,

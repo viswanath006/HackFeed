@@ -11,7 +11,18 @@ from scrapers.devfolio import DevfolioScraper
 from scrapers.hackerearth import HackerEarthScraper
 from scrapers.h2skill import H2SkillScraper
 from scrapers.apify_fallback import ApifyFallbackScraper
-from scrapers.config import PLATFORM_CONFIG, APIFY_ACTORS, get_platform_mode
+from scrapers.coursera import CourseraScraper
+from scrapers.freecodecamp import FreeCodeCampScraper
+from scrapers.nptel import NptelScraper
+from scrapers.udemy import UdemyScraper
+from scrapers.config import (
+    PLATFORM_CONFIG,
+    APIFY_ACTORS,
+    get_platform_mode,
+    COURSE_PLATFORM_CONFIG,
+    COURSE_APIFY_ACTORS,
+    get_course_platform_mode,
+)
 
 DIRECT_SCRAPER_MAP: Dict[str, Type[BaseScraper]] = {
     "unstop": UnstopScraper,
@@ -22,13 +33,39 @@ DIRECT_SCRAPER_MAP: Dict[str, Type[BaseScraper]] = {
 
 ALL_PLATFORMS = list(DIRECT_SCRAPER_MAP.keys())
 
+COURSE_SCRAPER_MAP: Dict[str, Type[BaseScraper]] = {
+    "coursera": CourseraScraper,
+    "freecodecamp": FreeCodeCampScraper,
+    "nptel": NptelScraper,
+    "udemy": UdemyScraper,
+}
+
+ALL_COURSE_PLATFORMS = list(COURSE_SCRAPER_MAP.keys())
+
+
+def get_course_scraper_for_platform(platform_name: str) -> BaseScraper:
+    """
+    Factory function returning the appropriate course scraper instance.
+    """
+    p_key = platform_name.lower()
+    scraper_cls = COURSE_SCRAPER_MAP.get(p_key)
+    if scraper_cls:
+        return scraper_cls()
+
+    raise ValueError(f"Unknown course platform: {platform_name}. Supported: {ALL_COURSE_PLATFORMS}")
+
 
 def get_scraper_for_platform(platform_name: str) -> BaseScraper:
     """
-    Factory function returning the appropriate scraper instance (Direct or Apify Fallback)
-    based on the configuration in scrapers/config.py.
+    Factory function returning the appropriate scraper instance (Direct, Apify Fallback, or Course)
+    based on configuration.
     """
     p_key = platform_name.lower()
+
+    # Route course platforms
+    if p_key in COURSE_SCRAPER_MAP:
+        return get_course_scraper_for_platform(p_key)
+
     mode = get_platform_mode(p_key)
 
     if mode == "apify":
@@ -38,7 +75,7 @@ def get_scraper_for_platform(platform_name: str) -> BaseScraper:
     if scraper_cls:
         return scraper_cls()
 
-    raise ValueError(f"Unknown platform: {platform_name}. Supported: {ALL_PLATFORMS}")
+    raise ValueError(f"Unknown platform: {platform_name}. Supported: {ALL_PLATFORMS + ALL_COURSE_PLATFORMS}")
 
 
 __all__ = [
@@ -48,9 +85,21 @@ __all__ = [
     "HackerEarthScraper",
     "H2SkillScraper",
     "ApifyFallbackScraper",
+    "CourseraScraper",
+    "FreeCodeCampScraper",
+    "NptelScraper",
+    "UdemyScraper",
     "DIRECT_SCRAPER_MAP",
     "ALL_PLATFORMS",
+    "COURSE_SCRAPER_MAP",
+    "ALL_COURSE_PLATFORMS",
     "PLATFORM_CONFIG",
     "APIFY_ACTORS",
+    "COURSE_PLATFORM_CONFIG",
+    "COURSE_APIFY_ACTORS",
     "get_scraper_for_platform",
+    "get_course_scraper_for_platform",
+    "get_platform_mode",
+    "get_course_platform_mode",
 ]
+
