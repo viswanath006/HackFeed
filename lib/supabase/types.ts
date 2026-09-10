@@ -20,6 +20,18 @@ export type OpportunityMode = 'online' | 'offline' | 'hybrid'
 export type AdminRole = 'super_admin' | 'moderator'
 export type ScrapeStatus = 'success' | 'failed' | 'partial'
 export type PreferenceOpportunityType = 'hackathon' | 'internship' | 'both'
+export type CourseLevel = 'beginner' | 'intermediate' | 'advanced'
+export type CoursePriceType = 'free' | 'paid' | 'free_with_paid_certificate'
+
+export const COURSE_DOMAINS = [
+  'Web Development',
+  'AI/ML',
+  'Cloud Computing',
+  'DSA',
+  'Cybersecurity',
+  'Data Science',
+] as const
+export type CourseDomain = typeof COURSE_DOMAINS[number]
 
 // ---------------------------------------------------------------------------
 // Row types  (what you get back from SELECT)
@@ -50,10 +62,32 @@ export interface OpportunityRow {
   updated_at: string
 }
 
+export interface CourseRow {
+  id: string
+  title: string
+  description: string | null
+  provider: string
+  domain: string
+  level: CourseLevel | null
+  price_type: CoursePriceType
+  price: string | null
+  duration: string | null
+  certificate_provided: boolean
+  course_url: string
+  rating: number | null
+  tags: string[] | null
+  is_active: boolean
+  is_featured: boolean
+  added_by: string | null
+  created_at: string
+  updated_at: string
+}
+
 export interface BookmarkRow {
   id: string
   user_id: string
-  opportunity_id: string
+  opportunity_id: string | null
+  course_id: string | null
   created_at: string
 }
 
@@ -123,10 +157,32 @@ export interface OpportunityInsert {
   updated_at?: string
 }
 
+export interface CourseInsert {
+  id?: string
+  title: string
+  description?: string | null
+  provider: string
+  domain: string
+  level?: CourseLevel | null
+  price_type?: CoursePriceType
+  price?: string | null
+  duration?: string | null
+  certificate_provided?: boolean
+  course_url: string
+  rating?: number | null
+  tags?: string[] | null
+  is_active?: boolean
+  is_featured?: boolean
+  added_by?: string | null
+  created_at?: string
+  updated_at?: string
+}
+
 export interface BookmarkInsert {
   id?: string
   user_id: string
-  opportunity_id: string
+  opportunity_id?: string | null
+  course_id?: string | null
   created_at?: string
 }
 
@@ -172,7 +228,8 @@ export interface ScrapeLogInsert {
 // ---------------------------------------------------------------------------
 
 export type OpportunityUpdate = Partial<OpportunityInsert>
-export type BookmarkUpdate   = Partial<BookmarkInsert>
+export type CourseUpdate      = Partial<CourseInsert>
+export type BookmarkUpdate    = Partial<BookmarkInsert>
 export type UserPreferencesUpdate = Partial<Omit<UserPreferencesInsert, 'user_id' | 'created_at'>>
 export type ReminderQueueUpdate   = Partial<Omit<ReminderQueueInsert, 'id' | 'created_at'>>
 export type AdminUpdate      = Partial<AdminInsert>
@@ -191,6 +248,19 @@ export interface Database {
         Update: OpportunityUpdate
         Relationships: []
       }
+      courses: {
+        Row:    CourseRow
+        Insert: CourseInsert
+        Update: CourseUpdate
+        Relationships: [
+          {
+            foreignKeyName: "courses_added_by_fkey"
+            columns: ["added_by"]
+            referencedRelation: "admins"
+            referencedColumns: ["id"]
+          }
+        ]
+      }
       bookmarks: {
         Row:    BookmarkRow
         Insert: BookmarkInsert
@@ -200,6 +270,12 @@ export interface Database {
             foreignKeyName: "bookmarks_opportunity_id_fkey"
             columns: ["opportunity_id"]
             referencedRelation: "opportunities"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "bookmarks_course_id_fkey"
+            columns: ["course_id"]
+            referencedRelation: "courses"
             referencedColumns: ["id"]
           }
         ]
@@ -248,6 +324,8 @@ export interface Database {
       preference_opportunity_type: PreferenceOpportunityType
       admin_role: AdminRole
       scrape_status: ScrapeStatus
+      course_level: CourseLevel
+      course_price_type: CoursePriceType
     }
     CompositeTypes: {
       [_ in never]: never

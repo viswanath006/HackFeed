@@ -21,8 +21,9 @@ import TagChip from "@/components/TagChip"
 import BookmarkButton from "@/components/BookmarkButton"
 import AddToCalendarButton from "@/components/AddToCalendarButton"
 import OpportunityCard from "@/components/OpportunityCard"
+import CourseCard from "@/components/CourseCard"
 import OpportunityCover from "@/components/OpportunityCover"
-import type { OpportunityRow } from "@/lib/supabase/types"
+import type { OpportunityRow, CourseRow } from "@/lib/supabase/types"
 import { MOCK_OPPORTUNITIES } from "@/lib/mockData"
 import { sanitizeExternalUrl } from "@/lib/utils"
 
@@ -95,6 +96,7 @@ export default async function OpportunityDetailPage({
   let op: OpportunityRow | null = null
   let isBookmarked = false
   let relatedOpportunities: OpportunityRow[] = []
+  let prepCourses: CourseRow[] = []
 
   if (isSupabaseConfigured()) {
     try {
@@ -127,6 +129,23 @@ export default async function OpportunityDetailPage({
           .neq("id", op.id)
           .limit(4)
         if (rel && rel.length > 0) relatedOpportunities = rel as OpportunityRow[]
+
+        // Fetch 1-2 courses whose domain matches any of the opportunity's tags
+        const opTags = op.tags ?? []
+        const DOMAINS = ["Web Development", "AI/ML", "Cloud Computing", "DSA", "Cybersecurity", "Data Science"]
+        const matchingDomains = DOMAINS.filter((d) =>
+          opTags.some((t) => t.toLowerCase().includes(d.toLowerCase()) || d.toLowerCase().includes(t.toLowerCase()))
+        )
+        if (matchingDomains.length > 0) {
+          const { data: courseData } = await supabase
+            .from("courses")
+            .select("*")
+            .eq("is_active", true)
+            .in("domain", matchingDomains)
+            .order("is_featured", { ascending: false })
+            .limit(2)
+          if (courseData && courseData.length > 0) prepCourses = courseData as CourseRow[]
+        }
       }
     } catch (err) {
       console.warn("Detail page Supabase query notice:", err)
@@ -389,7 +408,32 @@ export default async function OpportunityDetailPage({
           </aside>
         </div>
 
-        {/* ── Related Bulletin Listings ───────────────────────── */}
+        {/* ── Prep for this ────────────────────────────── */}
+        {prepCourses.length > 0 && (
+          <section className="mt-12 border-t border-hairline pt-8">
+            <div className="flex items-baseline justify-between mb-4">
+              <div>
+                <p className="text-xs font-serif italic text-ink-muted">Sharpen your skills</p>
+                <h2 className="font-serif text-xl font-normal tracking-tight text-ink mt-1">
+                  Prepare for this
+                </h2>
+              </div>
+              <Link
+                href="/courses"
+                className="text-xs font-medium text-ink-muted hover:text-ink hover:underline decoration-ink/40 underline-offset-4 transition"
+              >
+                All courses
+              </Link>
+            </div>
+            <div className="border-t border-hairline divide-y divide-hairline">
+              {prepCourses.map((course) => (
+                <CourseCard key={course.id} course={course} userId={userId} compact />
+              ))}
+            </div>
+          </section>
+        )}
+
+        {/* ── Related Bulletin Listings ─────────────────── */}
         {relatedOpportunities.length > 0 && (
           <section className="mt-20 border-t border-hairline pt-10">
             <div className="flex items-baseline justify-between mb-6">

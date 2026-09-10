@@ -16,9 +16,10 @@ import { createClient } from "@/lib/supabase/server"
 import { getUser } from "@/lib/supabase/getUser"
 import { isSupabaseConfigured } from "@/lib/supabase/env"
 import OpportunityCard from "@/components/OpportunityCard"
+import CourseCard from "@/components/CourseCard"
 import RecommendedSection from "@/components/RecommendedSection"
 import HeroVideoBackground from "@/components/HeroVideoBackground"
-import type { OpportunityRow, UserPreferencesRow } from "@/lib/supabase/types"
+import type { OpportunityRow, UserPreferencesRow, CourseRow } from "@/lib/supabase/types"
 import { MOCK_OPPORTUNITIES } from "@/lib/mockData"
 
 export const dynamic = "force-dynamic"
@@ -39,6 +40,7 @@ export default async function HomePage() {
   let recommendedRows: OpportunityRow[] = []
   let bookmarkRows: { opportunity_id: string }[] = []
   let preferences: UserPreferencesRow | null = null
+  let featuredCourses: CourseRow[] = []
 
   if (isSupabaseConfigured()) {
     try {
@@ -52,6 +54,7 @@ export default async function HomePage() {
         recRes,
         bmRes,
         prefRes,
+        coursesRes,
       ] = await Promise.allSettled([
         supabase
           .from("opportunities")
@@ -86,6 +89,13 @@ export default async function HomePage() {
         userId
           ? (supabase as any).from("user_preferences").select("*").eq("user_id", userId).maybeSingle()
           : Promise.resolve({ data: null }),
+        supabase
+          .from("courses")
+          .select("*")
+          .eq("is_active", true)
+          .eq("is_featured", true)
+          .order("created_at", { ascending: false })
+          .limit(6),
       ])
 
       if (hCountRes.status === "fulfilled" && hCountRes.value.count !== null && hCountRes.value.count > 0) {
@@ -105,6 +115,9 @@ export default async function HomePage() {
       }
       if (prefRes.status === "fulfilled" && prefRes.value && (prefRes.value as any).data) {
         preferences = (prefRes.value as any).data as UserPreferencesRow
+      }
+      if (coursesRes.status === "fulfilled" && coursesRes.value.data && coursesRes.value.data.length > 0) {
+        featuredCourses = coursesRes.value.data as CourseRow[]
       }
     } catch (err) {
       console.warn("HomePage Supabase notice:", err)
@@ -253,6 +266,39 @@ export default async function HomePage() {
                   opportunity={op}
                   userId={userId}
                   isBookmarked={bookmarkedIds.has(op.id)}
+                  showTags
+                />
+              ))}
+            </div>
+          </div>
+        </section>
+      )}
+
+      {/* ─────────────── LEVEL UP YOUR SKILLS ────────── */}
+      {featuredCourses.length > 0 && (
+        <section className="py-12 border-t border-hairline">
+          <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
+            <div className="flex items-baseline justify-between mb-6">
+              <div>
+                <p className="text-xs font-serif italic text-ink-muted">Curated skill tracks</p>
+                <h2 className="font-serif text-2xl sm:text-3xl font-normal tracking-tight text-ink mt-1">
+                  Level Up Your Skills
+                </h2>
+              </div>
+              <Link
+                href="/courses"
+                className="text-xs font-medium text-ink-muted hover:text-ink hover:underline decoration-ink/40 underline-offset-4 transition"
+              >
+                Browse all courses
+              </Link>
+            </div>
+
+            <div className="border-t border-hairline divide-y divide-hairline">
+              {featuredCourses.map((course) => (
+                <CourseCard
+                  key={course.id}
+                  course={course}
+                  userId={userId}
                   showTags
                 />
               ))}

@@ -15,7 +15,7 @@ import { revalidatePath } from "next/cache"
 import { redirect } from "next/navigation"
 import { createServiceClient } from "@/lib/supabase/server"
 import { getUser } from "@/lib/supabase/getUser"
-import type { OpportunityInsert, OpportunityUpdate } from "@/lib/supabase/types"
+import type { OpportunityInsert, OpportunityUpdate, CourseInsert, CourseUpdate, CourseLevel, CoursePriceType } from "@/lib/supabase/types"
 
 // ── Auth guard ────────────────────────────────────────────────────────────
 
@@ -190,5 +190,178 @@ export async function toggleIsFeatured(
   if (error) return { error: error.message }
 
   revalidatePath("/admin/opportunities")
+  return {}
+}
+
+// =============================================================================
+// ── COURSE ACTIONS ────────────────────────────────────────────────────────────
+// =============================================================================
+
+/** Parse FormData into a CourseInsert / partial object */
+function parseCourseForm(data: FormData): Omit<CourseInsert, "id" | "created_at" | "updated_at"> {
+  const str = (key: string) => {
+    const v = (data.get(key) as string | null)?.trim()
+    return v || null
+  }
+  const bool = (key: string) => data.get(key) === "true"
+  const tags = (): string[] | null => {
+    const raw = str("tags")
+    if (!raw) return null
+    return raw.split(",").map((t) => t.trim()).filter(Boolean)
+  }
+  const numOrNull = (key: string): number | null => {
+    const v = str(key)
+    if (!v) return null
+    const n = parseFloat(v)
+    return isNaN(n) ? null : n
+  }
+
+  return {
+    title: (data.get("title") as string).trim(),
+    description: str("description"),
+    provider: (data.get("provider") as string).trim(),
+    domain: (data.get("domain") as string).trim(),
+    level: (str("level") as CourseLevel | null) || null,
+    price_type: (data.get("price_type") as CoursePriceType) || "free",
+    price: str("price"),
+    duration: str("duration"),
+    certificate_provided: bool("certificate_provided"),
+    course_url: (data.get("course_url") as string).trim(),
+    rating: numOrNull("rating"),
+    tags: tags(),
+    is_active: bool("is_active"),
+    is_featured: bool("is_featured"),
+  }
+}
+
+// ── Create Course ─────────────────────────────────────────────────────────────
+
+export async function createCourse(
+  formData: FormData
+): Promise<{ error?: string }> {
+  const { user } = await requireAdmin()
+  const supabase = await createServiceClient()
+  const payload = parseCourseForm(formData)
+
+  const { error } = await (supabase as any).from("courses").insert({
+    ...payload,
+    added_by: user.id,
+  })
+  if (error) return { error: error.message }
+
+  revalidatePath("/admin/courses")
+  revalidatePath("/courses")
+  revalidatePath("/")
+  redirect("/admin/courses")
+}
+
+// ── Update Course ─────────────────────────────────────────────────────────────
+
+export async function updateCourse(
+  id: string,
+  formData: FormData
+): Promise<{ error?: string }> {
+  await requireAdmin()
+  const supabase = await createServiceClient()
+  const payload = parseCourseForm(formData) as CourseUpdate
+
+  const { error } = await (supabase as any)
+    .from("courses")
+    .update({ ...payload, updated_at: new Date().toISOString() })
+    .eq("id", id)
+
+  if (error) return { error: error.message }
+
+  revalidatePath("/admin/courses")
+  revalidatePath(`/admin/courses/${id}/edit`)
+  revalidatePath("/courses")
+  revalidatePath(`/courses/${id}`)
+  revalidatePath("/")
+  return {}
+}
+
+// ── Soft Delete Course (is_active = false) ────────────────────────────────────
+
+export async function softDeleteCourse(
+  id: string
+): Promise<{ error?: string }> {
+  await requireAdmin()
+  const supabase = await createServiceClient()
+
+  const { error } = await (supabase as any)
+    .from("courses")
+    .update({ is_active: false, updated_at: new Date().toISOString() })
+    .eq("id", id)
+
+  if (error) return { error: error.message }
+
+  revalidatePath("/admin/courses")
+  revalidatePath(`/admin/courses/${id}/edit`)
+  revalidatePath("/courses")
+  return {}
+}
+
+// ── Hard Delete Course (super_admin only) ─────────────────────────────────────
+
+export async function hardDeleteCourse(
+  id: string
+): Promise<{ error?: string }> {
+  const { isSuperAdmin } = await requireAdmin()
+
+  if (!isSuperAdmin) {
+    return { error: "Only super admins can permanently delete courses." }
+  }
+
+  const supabase = await createServiceClient()
+  const { error } = await (supabase as any).from("courses").delete().eq("id", id)
+
+  if (error) return { error: error.message }
+
+  revalidatePath("/admin/courses")
+  revalidatePath("/courses")
+  revalidatePath("/")
+  redirect("/admin/courses")
+}
+
+// ── Toggle Course is_active ───────────────────────────────────────────────────
+
+export async function toggleCourseIsActive(
+  id: string,
+  current: boolean
+): Promise<{ error?: string }> {
+  await requireAdmin()
+  const supabase = await createServiceClient()
+
+  const { error } = await (supabase as any)
+    .from("courses")
+    .update({ is_active: !current, updated_at: new Date().toISOString() })
+    .eq("id", id)
+
+  if (error) return { error: error.message }
+
+  revalidatePath("/admin/courses")
+  revalidatePath("/admin")
+  revalidatePath("/courses")
+  return {}
+}
+
+// ── Toggle Course is_featured ─────────────────────────────────────────────────
+
+export async function toggleCourseIsFeatured(
+  id: string,
+  current: boolean
+): Promise<{ error?: string }> {
+  await requireAdmin()
+  const supabase = await createServiceClient()
+
+  const { error } = await (supabase as any)
+    .from("courses")
+    .update({ is_featured: !current, updated_at: new Date().toISOString() })
+    .eq("id", id)
+
+  if (error) return { error: error.message }
+
+  revalidatePath("/admin/courses")
+  revalidatePath("/")
   return {}
 }

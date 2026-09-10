@@ -2,7 +2,8 @@
  * app/bookmarks/page.tsx
  *
  * User's saved bookmarks page (Protected route).
- * Grounded in Paper & Ink editorial design.
+ * Shows both bookmarked opportunities and bookmarked courses in
+ * two clearly separated sections.
  */
 
 import type { Metadata } from "next"
@@ -10,11 +11,11 @@ import { redirect } from "next/navigation"
 import { createClient } from "@/lib/supabase/server"
 import { getUser } from "@/lib/supabase/getUser"
 import BookmarksFeed from "./BookmarksFeed"
-import type { OpportunityRow } from "@/lib/supabase/types"
+import type { OpportunityRow, CourseRow } from "@/lib/supabase/types"
 
 export const metadata: Metadata = {
   title: "Saved Bookmarks — HackFeed",
-  description: "View and manage your saved hackathons and internships.",
+  description: "View and manage your saved hackathons, internships, and courses.",
 }
 
 export default async function BookmarksPage() {
@@ -26,7 +27,8 @@ export default async function BookmarksPage() {
 
   const supabase = await createClient()
 
-  const { data: bookmarkRecords } = await supabase
+  // Fetch bookmarked opportunities
+  const { data: oppBookmarks } = await supabase
     .from("bookmarks")
     .select(`
       id,
@@ -35,17 +37,42 @@ export default async function BookmarksPage() {
       opportunities (*)
     `)
     .eq("user_id", user.id)
+    .not("opportunity_id", "is", null)
     .order("created_at", { ascending: false })
 
-  const records = (bookmarkRecords as any[] | null) ?? []
+  // Fetch bookmarked courses
+  const { data: courseBookmarks } = await (supabase as any)
+    .from("bookmarks")
+    .select(`
+      id,
+      created_at,
+      course_id,
+      courses (*)
+    `)
+    .eq("user_id", user.id)
+    .not("course_id", "is", null)
+    .order("created_at", { ascending: false })
+
+  const oppRecords = (oppBookmarks as any[] | null) ?? []
+  const courseRecords = (courseBookmarks as any[] | null) ?? []
 
   const opportunities: OpportunityRow[] = []
-  for (const record of records) {
+  for (const record of oppRecords) {
     const op = record?.opportunities as OpportunityRow | null
     if (op && op.id && op.is_active) {
       opportunities.push(op)
     }
   }
+
+  const courses: CourseRow[] = []
+  for (const record of courseRecords) {
+    const course = record?.courses as CourseRow | null
+    if (course && course.id && course.is_active) {
+      courses.push(course)
+    }
+  }
+
+  const totalSaved = opportunities.length + courses.length
 
   return (
     <div className="min-h-screen bg-paper text-ink pb-20">
@@ -59,12 +86,12 @@ export default async function BookmarksPage() {
                 Saved Bookmarks
               </h1>
               <p className="mt-2 text-xs sm:text-sm text-ink-muted max-w-xl leading-relaxed">
-                Track your saved hackathons and internships with their upcoming application deadlines.
+                Track your saved hackathons, internships, and courses.
               </p>
             </div>
             <div className="border border-hairline bg-paper px-4 py-2.5 text-right">
               <p className="text-[10px] uppercase tracking-wider text-ink-muted">Total Saved</p>
-              <p className="font-serif text-2xl font-normal text-ink mt-0.5">{opportunities.length}</p>
+              <p className="font-serif text-2xl font-normal text-ink mt-0.5">{totalSaved}</p>
             </div>
           </div>
         </div>
@@ -74,6 +101,7 @@ export default async function BookmarksPage() {
       <main className="mx-auto max-w-7xl px-4 py-8 sm:px-6 lg:px-8">
         <BookmarksFeed
           initialOpportunities={opportunities}
+          initialCourses={courses}
           userId={user.id}
         />
       </main>

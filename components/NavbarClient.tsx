@@ -101,6 +101,13 @@ export default function NavbarClient({ user, isAdmin }: NavbarClientProps) {
             >
               Internships
             </Link>
+            <Link
+              href="/courses"
+              className="transition hover:text-ink hover:underline decoration-ink/40 decoration-1 underline-offset-4"
+              id="nav-courses-link"
+            >
+              Courses
+            </Link>
           </div>
         </div>
 

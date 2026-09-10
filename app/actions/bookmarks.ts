@@ -231,3 +231,69 @@ export async function removeBookmarkAction(
     isBookmarked: false,
   }
 }
+
+/**
+ * Toggle bookmark for a course.
+ * No reminder queue — courses don't have deadlines.
+ */
+export async function toggleCourseBookmarkAction(
+  courseId: string
+): Promise<BookmarkActionResult> {
+  const { user } = await getUser()
+
+  if (!user || !user.id) {
+    return {
+      success: false,
+      isBookmarked: false,
+      error: "You must be signed in to bookmark courses.",
+    }
+  }
+
+  if (!isSupabaseConfigured()) {
+    return { success: true, isBookmarked: true }
+  }
+
+  const supabase = await createClient()
+
+  // Check if bookmark already exists
+  const { data: existing, error: fetchError } = await (supabase as any)
+    .from("bookmarks")
+    .select("id")
+    .eq("user_id", user.id)
+    .eq("course_id", courseId)
+    .maybeSingle()
+
+  if (fetchError) {
+    return { success: false, isBookmarked: false, error: fetchError.message }
+  }
+
+  if (existing) {
+    // Remove bookmark
+    const { error: deleteError } = await supabase
+      .from("bookmarks")
+      .delete()
+      .eq("user_id", user.id)
+      .eq("course_id" as any, courseId)
+
+    if (deleteError) {
+      return { success: false, isBookmarked: true, error: deleteError.message }
+    }
+
+    revalidatePath("/bookmarks")
+    revalidatePath(`/courses/${courseId}`)
+    return { success: true, isBookmarked: false }
+  } else {
+    // Add bookmark
+    const { error: insertError } = await (supabase as any)
+      .from("bookmarks")
+      .insert({ user_id: user.id, course_id: courseId })
+
+    if (insertError) {
+      return { success: false, isBookmarked: false, error: insertError.message }
+    }
+
+    revalidatePath("/bookmarks")
+    revalidatePath(`/courses/${courseId}`)
+    return { success: true, isBookmarked: true }
+  }
+}
