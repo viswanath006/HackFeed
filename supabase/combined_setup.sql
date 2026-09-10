@@ -207,3 +207,100 @@ USING (EXISTS (SELECT 1 FROM public.admins WHERE id = auth.uid()));
 DROP POLICY IF EXISTS "scrape_logs_admin_insert" ON public.scrape_logs;
 CREATE POLICY "scrape_logs_admin_insert" ON public.scrape_logs FOR INSERT TO authenticated
 WITH CHECK (EXISTS (SELECT 1 FROM public.admins WHERE id = auth.uid()));
+
+-- =============================================================================
+-- 7. Courses & Certifications
+-- =============================================================================
+
+DO $$ BEGIN
+    CREATE TYPE course_level AS ENUM ('beginner', 'intermediate', 'advanced');
+EXCEPTION WHEN duplicate_object THEN null; END $$;
+
+DO $$ BEGIN
+    CREATE TYPE course_price_type AS ENUM ('free', 'paid', 'free_with_paid_certificate');
+EXCEPTION WHEN duplicate_object THEN null; END $$;
+
+CREATE TABLE IF NOT EXISTS public.courses (
+    id                   UUID             PRIMARY KEY DEFAULT gen_random_uuid(),
+    title                TEXT             NOT NULL,
+    description          TEXT,
+    provider             TEXT             NOT NULL,
+    domain               TEXT             NOT NULL,
+    level                course_level,
+    price_type           course_price_type NOT NULL DEFAULT 'free',
+    price                TEXT,
+    duration             TEXT,
+    certificate_provided BOOLEAN          NOT NULL DEFAULT FALSE,
+    course_url           TEXT             NOT NULL,
+    rating               NUMERIC(3,1),
+    tags                 TEXT[],
+    is_active            BOOLEAN          NOT NULL DEFAULT TRUE,
+    is_featured          BOOLEAN          NOT NULL DEFAULT FALSE,
+    added_by             UUID             REFERENCES public.admins (id) ON DELETE SET NULL,
+    created_at           TIMESTAMPTZ      NOT NULL DEFAULT NOW(),
+    updated_at           TIMESTAMPTZ      NOT NULL DEFAULT NOW(),
+
+    CONSTRAINT courses_domain_check CHECK (
+        domain IN (
+            'Web Development',
+            'AI/ML',
+            'Cloud Computing',
+            'DSA',
+            'Cybersecurity',
+            'Data Science'
+        )
+    )
+);
+
+CREATE INDEX IF NOT EXISTS idx_courses_domain ON public.courses (domain);
+CREATE INDEX IF NOT EXISTS idx_courses_price_type ON public.courses (price_type);
+CREATE INDEX IF NOT EXISTS idx_courses_is_active ON public.courses (is_active);
+CREATE INDEX IF NOT EXISTS idx_courses_active_featured ON public.courses (is_active, is_featured);
+CREATE INDEX IF NOT EXISTS idx_courses_tags ON public.courses USING GIN (tags);
+
+DROP TRIGGER IF EXISTS trg_courses_updated_at ON public.courses;
+CREATE TRIGGER trg_courses_updated_at
+    BEFORE UPDATE ON public.courses
+    FOR EACH ROW EXECUTE FUNCTION set_updated_at();
+
+ALTER TABLE public.courses ENABLE ROW LEVEL SECURITY;
+
+DROP POLICY IF EXISTS "courses_public_read" ON public.courses;
+CREATE POLICY "courses_public_read" ON public.courses FOR SELECT USING (is_active = TRUE);
+
+DROP POLICY IF EXISTS "courses_admin_insert" ON public.courses;
+CREATE POLICY "courses_admin_insert" ON public.courses FOR INSERT TO authenticated
+WITH CHECK (EXISTS (SELECT 1 FROM public.admins WHERE id = auth.uid()));
+
+DROP POLICY IF EXISTS "courses_admin_update" ON public.courses;
+CREATE POLICY "courses_admin_update" ON public.courses FOR UPDATE TO authenticated
+USING (EXISTS (SELECT 1 FROM public.admins WHERE id = auth.uid()))
+WITH CHECK (EXISTS (SELECT 1 FROM public.admins WHERE id = auth.uid()));
+
+DROP POLICY IF EXISTS "courses_admin_delete" ON public.courses;
+CREATE POLICY "courses_admin_delete" ON public.courses FOR DELETE TO authenticated
+USING (EXISTS (SELECT 1 FROM public.admins WHERE id = auth.uid()));
+
+-- Extend bookmarks for courses
+ALTER TABLE public.bookmarks DROP CONSTRAINT IF EXISTS bookmarks_user_opportunity_unique;
+ALTER TABLE public.bookmarks ALTER COLUMN opportunity_id DROP NOT NULL;
+ALTER TABLE public.bookmarks ADD COLUMN IF NOT EXISTS course_id UUID REFERENCES public.courses (id) ON DELETE CASCADE;
+
+ALTER TABLE public.bookmarks DROP CONSTRAINT IF EXISTS bookmarks_one_target_check;
+ALTER TABLE public.bookmarks ADD CONSTRAINT bookmarks_one_target_check
+    CHECK (
+        (opportunity_id IS NOT NULL AND course_id IS NULL)
+        OR
+        (opportunity_id IS NULL AND course_id IS NOT NULL)
+    );
+
+ALTER TABLE public.bookmarks DROP CONSTRAINT IF EXISTS bookmarks_user_opportunity_unique;
+ALTER TABLE public.bookmarks ADD CONSTRAINT bookmarks_user_opportunity_unique
+    UNIQUE (user_id, opportunity_id);
+
+ALTER TABLE public.bookmarks DROP CONSTRAINT IF EXISTS bookmarks_user_course_unique;
+ALTER TABLE public.bookmarks ADD CONSTRAINT bookmarks_user_course_unique
+    UNIQUE (user_id, course_id);
+
+CREATE INDEX IF NOT EXISTS idx_bookmarks_course_id ON public.bookmarks (course_id) WHERE course_id IS NOT NULL;
+
